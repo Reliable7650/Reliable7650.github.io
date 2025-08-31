@@ -1,4 +1,4 @@
-# Lazarus Project Dashboard Updater - Genesis Version
+# Lazarus Project Dashboard Updater - Final Version v6.1
 
 name: Update Dashboard via Issue
 
@@ -20,20 +20,17 @@ jobs:
       - name: Update Dashboard
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
-          GITHUB_TOKEN: ${{ secrets.LAZARUS_TOKEN }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           pip install beautifulsoup4
           python - <<'END_PYTHON'
           import os
           import re
           from datetime import datetime
-          from bs4 import BeautifulSoup
+          from bs4 import BeautifulSoup, Comment
 
           issue_body = os.getenv('ISSUE_BODY', '')
           html_path = 'index.html'
 
-          # Read the current HTML
           with open(html_path, 'r', encoding='utf-8') as f:
               soup = BeautifulSoup(f, 'html.parser')
 
@@ -53,16 +50,14 @@ jobs:
               print("Processing DATA_UPDATE...")
               
               def get_value(key):
-                  match = re.search(f"{key}: (.*)", body)
+                  match = re.search(f"^{key}:(.*)", body, re.MULTILINE)
                   return match.group(1).strip() if match else None
 
-              # Update Total Progress
               total_progress = get_value('项目总进度')
               if total_progress:
                   soup.find('div', {'id': 'total_progress_val'}).string = f"{total_progress}%"
                   soup.find('div', {'id': 'total_progress_bar'})['style'] = f"width: {total_progress}%;"
               
-              # Update Milestones
               for i in range(1, 4):
                   for prefix in ['dap', 'mol']:
                       milestone_id = f"{prefix}{i}"
@@ -75,42 +70,43 @@ jobs:
                           tag['style'] = f"width: {progress}%;"
                           tag.string = f"{progress}%"
               
-              # Update Log Box
               log_entry_text = get_value('最新日志')
               if log_entry_text:
                   log_box = soup.find('div', {'id': 'log-box'})
+                  placeholder = next(c for c in log_box.contents if isinstance(c, Comment) and 'LOG_ENTRIES_START' in str(c))
                   new_log = soup.new_tag('div', **{'class': 'log-entry'})
                   new_log.append(BeautifulSoup(f"<span class='log-timestamp'>[{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}]</span> <span class='log-process'>[AUTO_UPDATE]</span> {log_entry_text}", 'html.parser'))
-                  log_box.insert(0, new_log)
+                  placeholder.insert_after(new_log)
 
           def add_timeline_event(soup, body, event_type, icon, prefix):
               print(f"Processing {event_type}...")
-              text = re.search(f"【{event_type}】(.*)", body, re.DOTALL).group(1).strip()
+              text_match = re.search(f"【{event_type}】(.*)", body, re.DOTALL)
+              if not text_match: return
+              text = text_match.group(1).strip()
               
               if event_type == "财务记录":
-                  item = re.search(r"项目: (.*)", text).group(1).strip()
-                  amount = re.search(r"金额: (.*)", text).group(1).strip()
-                  notes = re.search(r"备注: (.*)", text).group(1).strip()
+                  item = re.search(r"项目: (.*)", text, re.MULTILINE).group(1).strip()
+                  amount = re.search(r"金额: (.*)", text, re.MULTILINE).group(1).strip()
+                  notes = re.search(r"备注: (.*)", text, re.MULTILINE).group(1).strip()
                   content = f"<b>[财务]</b> {item} - <b>支出: {amount}</b>. 备注: {notes}"
               else:
                   content = f"<b>[{prefix}]</b> {text}" if prefix else text
               
               timeline_ul = soup.find('ul', {'id': 'project-timeline'})
+              placeholder = next(c for c in timeline_ul.contents if isinstance(c, Comment) and 'TIMELINE_ENTRIES_START' in str(c))
               new_item = soup.new_tag('li', **{'class': 'timeline-item'})
               new_item.append(BeautifulSoup(f"<div class='timeline-icon'>{icon}</div><span class='timeline-date'>{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}</span><p class='timeline-content'>{content}</p>", 'html.parser'))
-              timeline_ul.insert(0, new_item)
+              placeholder.insert_after(new_item)
 
-          # Determine action based on keyword
           if '【数据更新】' in issue_body:
               update_data(soup, issue_body)
-          elif '【里程碑】' in issue_body:
+          if '【里程碑】' in issue_body:
               add_timeline_event(soup, issue_body, "里程碑", "⭐", "")
-          elif '【实验日志】' in issue_body:
+          if '【实验日志】' in issue_body:
               add_timeline_event(soup, issue_body, "实验日志", "🔬", "实验日志")
-          elif '【财务记录】' in issue_body:
+          if '【财务记录】' in issue_body:
               add_timeline_event(soup, issue_body, "财务记录", "💰", "财务")
 
-          # Write the updated HTML back
           with open(html_path, 'w', encoding='utf-8') as f:
               f.write(str(soup))
           END_PYTHON
@@ -122,7 +118,7 @@ jobs:
           if ! git diff --quiet; then
             git add index.html
             current_version=$(grep "<span id=\"version\">v" index.html | awk -F'v' '{print $2}' | awk -F'</span>' '{print $1}')
-            git commit -m "Dashboard v${current_version}: Update via issue #${{ env.ISSUE_NUMBER }}"
+            git commit -m "Dashboard v${current_version}: Update via issue #${{ github.event.issue.number }}"
             git push
           else
             echo "No changes to commit."
@@ -131,4 +127,4 @@ jobs:
       - name: Close the Issue
         uses: peter-evans/close-issue@v3
         with:
-          comment: "感谢你的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅ (Genesis v1.0)"
+          comment: "感谢你的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅ (Final v6.1)"
