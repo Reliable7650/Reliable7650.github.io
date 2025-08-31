@@ -1,4 +1,4 @@
-# Lazarus Project Dashboard Updater v5.1 ("Rock Solid")
+# Lazarus Project Dashboard Updater v5.2 ("Glory")
 
 name: Update Dashboard via Issue
 
@@ -52,7 +52,6 @@ jobs:
             local id=$1
             local status=$2
             local progress=$3
-            # This robust awk script finds the milestone block by ID and updates its children
             awk -v id="$id" -v status="$status" -v progress="$progress" '
             BEGIN { in_block=0 }
             /id="'"$id"'"/ { in_block=1 }
@@ -76,7 +75,7 @@ jobs:
           if [ -n "${{ steps.extract.outputs.latest_log_entry }}" ]; then
             timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
             new_log_entry="<div class=\"log-entry\"><span class=\"log-timestamp\">[${timestamp}]</span> <span class=\"log-process\">[AUTO_UPDATE]</span> <span class=\"log-info\">${{ steps.extract.outputs.latest_log_entry }}</span></div>"
-            sed -i "/<div class=\"log-box\" id=\"log-box\">/a ${new_log_entry}" temp_index.html
+            sed -i "1s|^|<div class=\"log-box\" id=\"log-box\">${new_log_entry}|" temp_index.html # A bit of a hack to insert at top
           fi
           
           mv temp_index.html index.html
@@ -98,9 +97,9 @@ jobs:
       - name: Update Version, Timestamp, and Commit
         if: steps.extract.outputs.type != 'UNKNOWN'
         run: |
-          current_version=$(grep "Dashboard Version: v" index.html | awk -F'v' '{print $2}')
+          current_version=$(grep "<span id=\"version\">v" index.html | awk -F'v' '{print $2}' | awk -F'</span>' '{print $1}')
           new_version=$(echo "$current_version + 0.1" | bc)
-          sed -i "s|Dashboard Version: v.*|Dashboard Version: v${new_version}|" index.html
+          sed -i "s|<span id=\"version\">v.*</span>|<span id=\"version\">v${new_version}</span>|" index.html
           
           timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
           sed -i "s|<span id=\"update-time\">.*</span>|<span id=\"update-time\">${timestamp}</span>|" index.html
@@ -121,4 +120,4 @@ jobs:
         if: steps.extract.outputs.type != 'UNKNOWN'
         uses: peter-evans/close-issue@v3
         with:
-          comment: "感谢你的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅ (v5.1)"
+          comment: "感谢你的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅ (v5.2)"
