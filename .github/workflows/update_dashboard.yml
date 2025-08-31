@@ -120,23 +120,4 @@ jobs:
                   placeholder.insert_after(entry)
 
           with open(html_path, 'w', encoding='utf-8') as f:
-              f.write(str(soup))
-          END_PYTHON
-
-      - name: Commit and Push Changes
-        run: |
-          git config --global user.name 'Lazarus Diary Bot'
-          git config --global user.email 'bot@lazarus.project'
-          if ! git diff --quiet; then
-            git add index.html
-            current_version=$(grep "<span id=\"version\">v" index.html | awk -F'v' '{print $2}' | awk -F'</span>' '{print $1}')
-            git commit -m "Dashboard v${current_version}: Update via issue #${{ github.event.issue.number }}"
-            git push
-          else
-            echo "No changes to commit."
-          fi
-      
-      - name: Close the Issue
-        uses: peter-evans/close-issue@v3
-        with:
-          comment: "感谢你的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅ (Phoenix v7.0)"
+  
