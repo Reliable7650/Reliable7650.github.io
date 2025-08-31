@@ -7,33 +7,33 @@
     <style>
         :root { --bg-color: #1a1a1a; --card-bg-color: #2c2c2c; --text-color: #e0e0e0; --header-color: #ffffff; --accent-color: #00aaff; --success-color: #00cc66; --warning-color: #ffaa00; --progress-bar-bg: #444444; --border-color: #555555; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+        。container { max-width: 1200px; margin: 0 auto; }
+        。header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
         h1, h2, h3 { color: var(--header-color); margin-top: 0; }
-        .header p { margin: 5px 0 0; }
-        .header .version { font-size: 0.8em; color: #777; margin-top: 8px; }
-        .last-updated { font-size: 0.9em; color: var(--warning-color); }
-        .key-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .metric-card { background-color: var(--card-bg-color); padding: 20px; border-radius: 8px; border-left: 5px solid var(--accent-color); }
-        .metric-card h3 { margin-bottom: 10px; font-size: 1.1em; }
-        .metric-card .value { font-size: 2em; font-weight: bold; color: var(--accent-color); }
-        .metric-card .value.operational { color: var(--success-color); }
-        .progress-bar-container { width: 100%; background-color: var(--progress-bar-bg); border-radius: 5px; overflow: hidden; height: 20px; margin-top: 10px; }
-        .progress-bar { height: 100%; background-color: var(--accent-color); color: white; text-align: center; line-height: 20px; font-size: 0.8em; font-weight: bold; }
-        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .left-column, .right-column { display: flex; flex-direction: column; gap: 20px; }
-        .task-card, .timeline-card, .log-container { background-color: var(--card-bg-color); border-radius: 8px; padding: 25px; }
-        .task-card h2, .timeline-card h2, .log-container h2 { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
-        .milestone { margin-bottom: 20px; }
-        .timeline { list-style: none; padding: 0; margin: 0; max-height: 450px; overflow-y: auto; }
-        .timeline-item { position: relative; padding-left: 30px; padding-bottom: 20px; border-left: 2px solid var(--timeline-color); }
-        .timeline-item:last-child { padding-bottom: 0; border-left: 2px solid transparent; }
-        .timeline-icon { position: absolute; left: -11px; top: 0; width: 20px; height: 20px; border-radius: 50%; background-color: var(--accent-color); text-align: center; line-height: 20px; font-size: 12px; color: white; }
-        .timeline-date { font-size: 0.8em; color: var(--warning-color); margin-bottom: 5px; display: block; }
-        .timeline-content { font-size: 0.95em; }
-        .log-box { background-color: #111; border: 1px solid var(--border-color); height: 200px; overflow-y: scroll; padding: 15px; border-radius: 5px; font-family: "Courier New", Courier, monospace; font-size: 0.9em; }
-        .log-entry { margin-bottom: 8px; line-height: 1.4; }
-        .log-timestamp { color: var(--warning-color); }
+        。header p { margin: 5px 0 0; }
+        。header .version { font-size: 0.8em; color: #777; margin-top: 8px; }
+        。last-updated { font-size: 0.9em; color: var(--warning-color); }
+        。key-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        。metric-card { background-color: var(--card-bg-color); padding: 20px; border-radius: 8px; border-left: 5px solid var(--accent-color); }
+        。metric-card h3 { margin-bottom: 10px; font-size: 1.1em; }
+        。metric-card .value { font-size: 2em; font-weight: bold; color: var(--accent-color); }
+        。metric-card .value.operational { color: var(--success-color); }
+        。progress-bar-container { width: 100%; background-color: var(--progress-bar-bg); border-radius: 5px; overflow: hidden; height: 20px; margin-top: 10px; }
+        。progress-bar { height: 100%; background-color: var(--accent-color); color: white; text-align: center; line-height: 20px; font-size: 0.8em; font-weight: bold; }
+        。main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        。left-column, .right-column { display: flex; flex-direction: column; gap: 20px; }
+        。task-card, .timeline-card, .log-container { background-color: var(--card-bg-color); border-radius: 8px; padding: 25px; }
+        。task-card h2, .timeline-card h2, .log-container h2 { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        。milestone { margin-bottom: 20px; }
+        。timeline { list-style: none; padding: 0; margin: 0; max-height: 450px; overflow-y: auto; }
+        。timeline-item { position: relative; padding-left: 30px; padding-bottom: 20px; border-left: 2px solid var(--timeline-color); }
+        。timeline-item:last-child { padding-bottom: 0; border-left: 2px solid transparent; }
+        。timeline-icon { position: absolute; left: -11px; top: 0; width: 20px; height: 20px; border-radius: 50%; background-color: var(--accent-color); text-align: center; line-height: 20px; font-size: 12px; color: white; }
+        。timeline-date { font-size: 0.8em; color: var(--warning-color); margin-bottom: 5px; display: block; }
+        。timeline-content { font-size: 0.95em; }
+        。log-box { background-color: #111; border: 1px solid var(--border-color); height: 200px; overflow-y: scroll; padding: 15px; border-radius: 5px; font-family: "Courier New", Courier, monospace; font-size: 0.9em; }
+        。log-entry { margin-bottom: 8px; line-height: 1.4; }
+        。log-timestamp { color: var(--warning-color); }
         .log-process { color: var(--accent-color); }
         @media (max-width: 900px) { .main-content { grid-template-columns: 1fr; } }
     </style>
@@ -42,14 +42,14 @@
     <div class="container">
         <header class="header">
             <h1>Project Lazarus - Command Center</h1>
-            <p>我们的日记本：记录延长犬类寿命革命的每一步 <span id="version">v</span></p>
-            <p class="last-updated">最后更新时间: <span id="update-time">2025-08-31 15:14:21 UTC</span></p>
+            <p>我们的日记本：记录延长犬类寿命革命的每一步 <span id="version">v1.0</span></p>
+            <p class="last-updated">最后更新时间: <span id="update-time">...</span></p>
         </header>
         <section class="key-metrics">
             <div class="metric-card">
                 <h3>项目总进度</h3>
-                <div class="value" id="total_progress_val">25%</div>
-                <div class="progress-bar-container"><div class="progress-bar" id="total_progress_bar" style="width: 25%;"></div></div>
+                <div class="value" id="total_progress_val">0%</div>
+                <div class="progress-bar-container"><div class="progress-bar" id="total_progress_bar" style="width: 0%;"></div></div>
             </div>
             <div class="metric-card">
                 <h3>核心系统心跳</h3>
@@ -64,38 +64,38 @@
             <div class="left-column">
                 <div class="task-card">
                     <h2>任务一: 犬类衰老数字地图</h2>
-                    <div class="milestone" id="dap1">
+                    <div class="milestone">
                         <h3>里程碑 1: DAP 数据接入</h3>
-                        <p><b>状态:</b> <span class="status">申请已提交 <!--DAP1_STATUS--> 等待审批</span></p>
-                        <div class="progress-bar-container"><div class="progress-bar" style="width: 100%;"> 100%</div></div>
+                        <p><b>状态:</b> <span id="dap1_status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" id="dap1_progress" style="width: 0%;">0%</div></div>
                     </div>
-                    <div class="milestone" id="dap2">
+                    <div class="milestone">
                         <h3>里程碑 2: 多源数据整合</h3>
-                        <p>状态: <span class="status">正在并行拉取公共数据</span></p>
-                        <div class="progress-bar-container"><div class="progress-bar" style="width: 40%;"> 40%</div></div>
+                        <p>状态: <span id="dap2_status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" id="dap2_progress" style="width: 0%;">0%</div></div>
                     </div>
-                    <div class="milestone" id="dap3">
+                    <div class="milestone">
                         <h3>里程碑 3: 知识图谱构建</h3>
-                        <p>状态: <span class="status">核心实体与关系模式设计中</span></p>
-                        <div class="progress-bar-container"><div class="progress-bar" style="width: 15%;"> 15%</div></div>
+                        <p>状态: <span id="dap3_status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" id="dap3_progress" style="width: 0%;">0%</div></div>
                     </div>
                 </div>
                 <div class="task-card">
                     <h2>任务二: 抗衰老候选分子库</h2>
-                     <div class="milestone" id="mol1">
+                     <div class="milestone">
                         <h3>里程碑 1: 化合物数据采集</h3>
-                        <p>状态: <span class="status">已采集 6,211,984 种化合物</span></p>
-                        <div class="progress-bar-container"><div class="progress-bar" style="width: 85%;"> 85%</div></div>
+                        <p>状态: <span id="mol1_status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" id="mol1_progress" style="width: 0%;">0%</div></div>
                     </div>
-                     <div class="milestone" id="mol2">
+                     <div class="milestone">
                         <h3>里程碑 2: 分子“画像”与筛选</h3>
-                        <p>状态: <span class="status">计算化学评估流水线运行中</span></p>
-                        <div class="progress-bar-container"><div class="progress-bar" style="width: 30%;"> 30%</div></div>
+                        <p>状态: <span id="mol2_status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" id="mol2_progress" style="width: 0%;">0%</div></div>
                     </div>
-                     <div class="milestone" id="mol3">
+                     <div class="milestone">
                         <h3>里程碑 3: 精选分子库生成</h3>
-                        <p>状态: <span class="status">待筛选分子数: 3,102</span></p>
-                        <div class="progress-bar-container"><div class="progress-bar" style="width: 12%;"> 12%</div></div>
+                        <p>状态: <span id="mol3_status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" id="mol3_progress" style="width: 0%;">0%</div></div>
                     </div>
                 </div>
             </div>
@@ -103,14 +103,15 @@
                 <div class="timeline-card">
                     <h2>项目大事记</h2>
                     <ul class="timeline" id="project-timeline">
-                        <!--TIMELINE_ENTRIES-->
+                        <!--TIMELINE_ENTRIES_START-->
+                        <!--TIMELINE_ENTRIES_END-->
                     </ul>
                 </div>
                 <div class="log-container">
                     <h2>实时活动日志</h2>
                     <div class="log-box" id="log-box">
-                        <div class='log-entry'><span class='log-timestamp'>[2025-08-31 15:14:19 UTC]</span> <span class='log-process'>[AUTO_UPDATE]</span> 指挥中心升级至V6.0 完美 版，所有模块已恢复并采用占位符技术重铸。</div>
-<!--LOG_ENTRIES-->
+                        <!--LOG_ENTRIES_START-->
+                        <!--LOG_ENTRIES_END-->
                     </div>
                 </div>
             </div>
