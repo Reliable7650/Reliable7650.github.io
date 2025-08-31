@@ -15,6 +15,7 @@
             --warning-color: #ffaa00;
             --progress-bar-bg: #444444;
             --border-color: #555555;
+            --timeline-color: #777;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -87,17 +88,22 @@
             font-size: 0.8em;
             font-weight: bold;
         }
-        .task-grid {
+        .main-content {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        .task-card {
+        .task-grid, .timeline-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .task-card, .timeline-card {
             background-color: var(--card-bg-color);
             border-radius: 8px;
             padding: 25px;
         }
-        .task-card h2 {
+        .task-card h2, .timeline-card h2 {
             margin: 0 0 20px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
@@ -118,60 +124,65 @@
         .milestone-status {
             font-size: 1.2em;
         }
-        .log-container {
-            margin-top: 30px;
-            background-color: var(--card-bg-color);
-            border-radius: 8px;
-            padding: 25px;
+        /* New Timeline Styles */
+        .timeline {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
-        .log-container h2 {
-            margin: 0 0 20px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-            color: var(--header-color);
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            padding-bottom: 20px;
+            border-left: 2px solid var(--timeline-color);
         }
-        .log-box {
-            background-color: #111;
-            border: 1px solid var(--border-color);
-            height: 200px;
-            overflow-y: scroll;
-            padding: 15px;
-            border-radius: 5px;
-            font-family: "Courier New", Courier, monospace;
-            font-size: 0.9em;
+        .timeline-item:last-child {
+            border-left: 2px solid transparent;
         }
-        .log-entry {
-            margin-bottom: 8px;
-            line-height: 1.4;
+        .timeline-icon {
+            position: absolute;
+            left: -11px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            color: white;
         }
-        .log-timestamp {
+        .timeline-date {
+            font-size: 0.8em;
             color: var(--warning-color);
+            margin-bottom: 5px;
+            display: block;
         }
-        .log-process {
-            color: var(--accent-color);
+        .timeline-content {
+            font-size: 0.95em;
         }
-        .log-info {
-            color: var(--text-color);
-        }
-        .status-submitted {
-            color: var(--warning-color);
+
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header class="header">
-            <h1>Project: Lazarus - Command Center</h1>
-            <p>延长犬类寿命革命性产品 - 虚拟研发指挥中心</p>
-            <p class="last-updated">最后更新时间: <span id="update-time"></span></p>
+            <h1>Project Lazarus - Command Center</h1>
+            <p>我们的日记本：记录延长犬类寿命革命的每一步</p>
+            <p class="last-updated">最后更新时间: <span id="update-time">2025-08-31 12:00:00 UTC</span></p>
         </header>
 
         <section class="key-metrics">
             <div class="metric-card">
                 <h3>项目总进度</h3>
-                <div class="value">25%</div>
+                <div class="value">0%</div>
                 <div class="progress-bar-container" style="margin-top: 10px;">
-                    <div class="progress-bar" style="width: 25%;"></div>
+                    <div class="progress-bar" style="width: 0%;"></div>
                 </div>
             </div>
             <div class="metric-card">
@@ -179,116 +190,54 @@
                 <div class="value operational">OPERATIONAL ✅</div>
             </div>
             <div class="metric-card">
-                <h3>当前计算资源负载</h3>
-                <div class="value">38.1%</div>
+                <h3>当前状态</h3>
+                <div class="value" style="font-size: 1.5em;">准备就绪</div>
             </div>
         </section>
 
-        <main class="task-grid">
-            <div class="task-card">
-                <h2>任务一: 犬类衰老数字地图</h2>
-                <div class="milestone">
-                    <div class="milestone-header">
-                        <span>里程碑 1: DAP 数据接入</span>
-                        <span class="milestone-status">✅</span>
-                    </div>
-                    <p class="status-submitted" style="font-size: 0.9em;"><b>状态: 申请已提交 <b>状态: 申请已提交 & 等待审批</b> 等待审批</b></p>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 100%; background-color: var(--success-color);">100%</div>
-                    </div>
-                </div>
-                <div class="milestone">
-                    <div class="milestone-header">
-                        <span>里程碑 2: 多源数据整合</span>
-                        <span class="milestone-status">🔄</span>
-                    </div>
-                    <p style="font-size: 0.9em; color: #aaa;">状态: 正在并行拉取并处理公共数据库数据</p>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 38%;">38%</div>
+        <main class="main-content">
+            <div class="task-grid">
+                <div class="task-card">
+                    <h2>任务一: 犬类衰老数字地图</h2>
+                    <div class="milestone">
+                        <div class="milestone-header">
+                            <span>里程碑 1: DAP 数据接入</span>
+                            <span class="milestone-status">⏳</span>
+                        </div>
+                        <p style="font-size: 0.9em; color: #aaa;"><b style="color: var(--warning-color);">状态: 尚未开始</b></p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 0%;">0%</div>
+                        </div>
                     </div>
                 </div>
-                <div class="milestone">
-                    <div class="milestone-header">
-                        <span>里程碑 3: 知识图谱构建</span>
-                        <span class="milestone-status">⏳</span>
-                    </div>
-                     <p style="font-size: 0.9em; color: #aaa;">状态: 核心实体与关系模式设计中</p>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 15%;">15%</div>
+
+                <div class="task-card">
+                    <h2>任务二: 抗衰老候选分子库</h2>
+                    <div class="milestone">
+                        <div class="milestone-header">
+                            <span>里程碑 1: 化合物数据采集</span>
+                            <span class="milestone-status">⏳</span>
+                        </div>
+                        <p style="font-size: 0.9em; color: #aaa;">状态: 尚未开始</p>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: 0%;">0%</div>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <div class="task-card">
-                <h2>任务二: 抗衰老候选分子库</h2>
-                <div class="milestone">
-                    <div class="milestone-header">
-                        <span>里程碑 1: 化合物数据采集</span>
-                        <span class="milestone-status">🔄</span>
-                    </div>
-                    <p style="font-size: 0.9em; color: #aaa;">状态: 已采集 6,211,984 种化合物数据</p>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 65%;">65%</div>
-                    </div>
-                </div>
-                <div class="milestone">
-                    <div class="milestone-header">
-                        <span>里程碑 2: 分子“画像”与筛选</span>
-                        <span class="milestone-status">🔄</span>
-                    </div>
-                    <p style="font-size: 0.9em; color: #aaa;">状态: 计算化学评估流水线运行中</p>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 28%;">28%</div>
-                    </div>
-                </div>
-                <div class="milestone">
-                    <div class="milestone-header">
-                        <span>里程碑 3: 精选分子库生成</span>
-                        <span class="milestone-status">⏳</span>
-                    </div>
-                     <p style="font-size: 0.9em; color: #aaa;">状态: 当前入库高潜力分子数: 2,511</p>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 8%;">8%</div>
-                    </div>
+            
+            <div class="timeline-container">
+                <div class="timeline-card">
+                    <h2>项目大事记</h2>
+                    <ul class="timeline" id="project-timeline">
+                        <!-- MILESTONES WILL BE AUTO-INSERTED HERE -->
+                    </ul>
                 </div>
             </div>
         </main>
-
-        <section class="log-container">
-            <h2>实时活动日志</h2>
-            <div class="log-box">
-<div class="log-entry"><span class="log-timestamp">[2025-08-31 10:38:11 UTC]</span> <span class="log-process">[AUTO_UPDATE]</span> <span class="log-info status-submitted">分子“画像”流水线已处理超过150万个分子，初步筛选出89个高潜力候选物。</span></div>
-                <div class="log-entry">
-                    <span class="log-timestamp">[2025-08-31 09:15:21 UTC]</span>
-                    <span class="log-process">[PROJECT_MILESTONE]</span>
-                    <span class="log-info status-submitted">DAP data access application successfully submitted by partner. Status updated.</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">[2025-08-31 09:15:18 UTC]</span>
-                    <span class="log-process">[PROCESS_ID: 9118]</span>
-                    <span class="log-info">Successfully parsed and stored ChEMBL compound CHEMBL112 (Metformin) bioactivity data.</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">[2025-08-31 09:15:15 UTC]</span>
-                    <span class="log-process">[PROCESS_ID: 8845]</span>
-                    <span class="log-info">Creating new relationship type 'targets_gene' in knowledge graph schema.</span>
-                </div>
-                <div class="log-entry">
-                    <span class="log-timestamp">[2025-08-31 09:15:12 UTC]</span>
-                    <span class="log-process">[PROCESS_ID: 9117]</span>
-                    <span class="log-info">Calculating ADMET properties for molecule batch #3115 (compounds 3,115,001 to 3,116,000).</span>
-                </div>
-                 <div class="log-entry">
-                    <span class="log-timestamp">[2025-08-31 09:15:09 UTC]</span>
-                    <span class="log-process">[PROCESS_ID: 8844]</span>
-                    <span class="log-info">Running NLP entity extraction model on PubMed abstract PMID:334XXXXX. Identified 'Canine', 'Sirtuin 1', and 'Resveratrol'.</span>
-                </div>
-            </div>
-        </section>
     </div>
 
     <script>
-        // Set the update time dynamically
         document.getElementById('update-time').textContent = new Date().toISOString();
     </script>
 </body>
