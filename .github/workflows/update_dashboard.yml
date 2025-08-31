@@ -1,4 +1,4 @@
-# Lazarus Project Dashboard Updater v5.2 ("Glory")
+# Lazarus Project Dashboard Updater v6.0 ("Perfection")
 
 name: Update Dashboard via Issue
 
@@ -17,85 +17,83 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Parse Issue Body
-        id: extract
+      - name: Update HTML File
+        id: update_html
         run: |
-          issue_body="${{ github.event.issue.body }}"
-          if [[ "$issue_body" == *"【数据更新】"* ]]; then
-            echo "type=DATA_UPDATE" >> $GITHUB_OUTPUT
-            echo "$issue_body" | grep ":" | while IFS=: read -r key value; do
-              var_name=$(echo "$key" | tr -d '[:space:]' | sed 's/项目总进度/total_progress/' | sed 's/状态/_status/' | sed 's/进度/_progress/' | sed 's/最新日志/latest_log_entry/')
-              var_value=$(echo "$value" | xargs)
-              echo "${var_name}=${var_value}" >> $GITHUB_OUTPUT
-            done
-          elif [[ "$issue_body" == *"【里程碑】"* ]]; then
-            echo "type=MILESTONE" >> $GITHUB_OUTPUT
-            echo "text=$(echo "$issue_body" | sed -n 's/.*【里程碑】//p' | xargs)" >> $GITHUB_OUTPUT
-          elif [[ "$issue_body" == *"【实验日志】"* ]]; then
-            echo "type=LAB_LOG" >> $GITHUB_OUTPUT
-            echo "text=$(echo "$issue_body" | sed -n 's/.*【实验日志】//p' | xargs)" >> $GITHUB_OUTPUT
-          elif [[ "$issue_body" == *"【财务记录】"* ]]; then
-            echo "type=FINANCE_LOG" >> $GITHUB_OUTPUT
-            echo "item=$(echo "$issue_body" | grep -oP '项目: \K.*' | xargs)" >> $GITHUB_OUTPUT
-            echo "amount=$(echo "$issue_body" | grep -oP '金额: \K.*' | xargs)" >> $GITHUB_OUTPUT
-            echo "notes=$(echo "$issue_body" | grep -oP '备注: \K.*' | xargs)" >> $GITHUB_OUTPUT
-          else
-            echo "type=UNKNOWN" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Update HTML based on Data Update
-        if: steps.extract.outputs.type == 'DATA_UPDATE'
-        run: |
-          cp index.html temp_index.html
-          
-          update_milestone() {
-            local id=$1
-            local status=$2
-            local progress=$3
-            awk -v id="$id" -v status="$status" -v progress="$progress" '
-            BEGIN { in_block=0 }
-            /id="'"$id"'"/ { in_block=1 }
-            in_block && /<span class="status">/ { sub(/>.*</, ">" status "<") }
-            in_block && /<div class="progress-bar"/ { sub(/width: [0-9.]*%;/, "width: " progress "%;"); sub(/>[0-9.]*%</, ">" progress "%<") }
-            /<\/div>/ && in_block && /milestone/ { in_block=0 }
-            { print }
-            ' temp_index.html > new_temp_index.html && mv new_temp_index.html temp_index.html
+          # Function to replace a placeholder in a file
+          replace_placeholder() {
+            local placeholder=$1
+            local value=$2
+            # Use a unique delimiter to avoid conflicts
+            sed -i "s|<!--${placeholder}-->|${value}|g" index.html
           }
 
-          update_milestone "dap1" "${{ steps.extract.outputs.dap1_status }}" "${{ steps.extract.outputs.dap1_progress }}"
-          update_milestone "dap2" "${{ steps.extract.outputs.dap2_status }}" "${{ steps.extract.outputs.dap2_progress }}"
-          update_milestone "dap3" "${{ steps.extract.outputs.dap3_status }}" "${{ steps.extract.outputs.dap3_progress }}"
-          update_milestone "mol1" "${{ steps.extract.outputs.mol1_status }}" "${{ steps.extract.outputs.mol1_progress }}"
-          update_milestone "mol2" "${{ steps.extract.outputs.mol2_status }}" "${{ steps.extract.outputs.mol2_progress }}"
-          update_milestone "mol3" "${{ steps.extract.outputs.mol3_status }}" "${{ steps.extract.outputs.mol3_progress }}"
+          # Read the entire issue body
+          issue_body="${{ github.event.issue.body }}"
 
-          sed -i "s|<div class=\"value\" id=\"total_progress_val\">[0-9.]*%</div>|<div class=\"value\" id=\"total_progress_val\">${{ steps.extract.outputs.total_progress }}%</div>|" temp_index.html
-          sed -i "s|<div class=\"progress-bar\" id=\"total_progress_bar\" style=\"width: [0-9.]*%;\">|<div class=\"progress-bar\" id=\"total_progress_bar\" style=\"width: ${{ steps.extract.outputs.total_progress }}%;\">|" temp_index.html
-          
-          if [ -n "${{ steps.extract.outputs.latest_log_entry }}" ]; then
+          # Handle DATA_UPDATE
+          if [[ "$issue_body" == *"【数据更新】"* ]]; then
+            echo "Processing DATA_UPDATE..."
+            # Extract and replace each value
+            replace_placeholder "DAP1_STATUS" "$(echo "$issue_body" | grep -oP 'dap1_status: \K.*')"
+            replace_placeholder "DAP1_PROGRESS_VAL" "$(echo "$issue_body" | grep -oP 'dap1_progress: \K.*')"
+            replace_placeholder "DAP1_PROGRESS_BAR" "$(echo "$issue_body" | grep -oP 'dap1_progress: \K.*')"
+
+            replace_placeholder "DAP2_STATUS" "$(echo "$issue_body" | grep -oP 'dap2_status: \K.*')"
+            replace_placeholder "DAP2_PROGRESS_VAL" "$(echo "$issue_body" | grep -oP 'dap2_progress: \K.*')"
+            replace_placeholder "DAP2_PROGRESS_BAR" "$(echo "$issue_body" | grep -oP 'dap2_progress: \K.*')"
+
+            replace_placeholder "DAP3_STATUS" "$(echo "$issue_body" | grep -oP 'dap3_status: \K.*')"
+            replace_placeholder "DAP3_PROGRESS_VAL" "$(echo "$issue_body" | grep -oP 'dap3_progress: \K.*')"
+            replace_placeholder "DAP3_PROGRESS_BAR" "$(echo "$issue_body" | grep -oP 'dap3_progress: \K.*')"
+            
+            replace_placeholder "MOL1_STATUS" "$(echo "$issue_body" | grep -oP 'mol1_status: \K.*')"
+            replace_placeholder "MOL1_PROGRESS_VAL" "$(echo "$issue_body" | grep -oP 'mol1_progress: \K.*')"
+            replace_placeholder "MOL1_PROGRESS_BAR" "$(echo "$issue_body" | grep -oP 'mol1_progress: \K.*')"
+
+            replace_placeholder "MOL2_STATUS" "$(echo "$issue_body" | grep -oP 'mol2_status: \K.*')"
+            replace_placeholder "MOL2_PROGRESS_VAL" "$(echo "$issue_body" | grep -oP 'mol2_progress: \K.*')"
+            replace_placeholder "MOL2_PROGRESS_BAR" "$(echo "$issue_body" | grep -oP 'mol2_progress: \K.*')"
+            
+            replace_placeholder "MOL3_STATUS" "$(echo "$issue_body" | grep -oP 'mol3_status: \K.*')"
+            replace_placeholder "MOL3_PROGRESS_VAL" "$(echo "$issue_body" | grep -oP 'mol3_progress: \K.*')"
+            replace_placeholder "MOL3_PROGRESS_BAR" "$(echo "$issue_body" | grep -oP 'mol3_progress: \K.*')"
+            
+            # Update Total Progress
+            total_progress=$(echo "$issue_body" | grep -oP '项目总进度: \K.*')
+            sed -i "s|<div class=\"value\" id=\"total_progress_val\">.*%</div>|<div class=\"value\" id=\"total_progress_val\">${total_progress}%</div>|" index.html
+            sed -i "s|<div class=\"progress-bar\" id=\"total_progress_bar\" style=\"width: .*%;\">|<div class=\"progress-bar\" id=\"total_progress_bar\" style=\"width: ${total_progress}%;\">|" index.html
+
+            # Update Log Box
+            log_entry=$(echo "$issue_body" | grep -oP '最新日志: \K.*')
+            if [ -n "$log_entry" ]; then
+                timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+                new_log="<div class='log-entry'><span class='log-timestamp'>[${timestamp}]</span> <span class='log-process'>[AUTO_UPDATE]</span> ${log_entry}</div>\n<!--LOG_ENTRIES-->"
+                replace_placeholder "LOG_ENTRIES" "$new_log"
+            fi
+            
+          # Handle TIMELINE Events
+          elif [[ "$issue_body" == *"【里程碑】"* || "$issue_body" == *"【实验日志】"* || "$issue_body" == *"【财务记录】"* ]]; then
+            echo "Processing TIMELINE Event..."
             timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-            new_log_entry="<div class=\"log-entry\"><span class=\"log-timestamp\">[${timestamp}]</span> <span class=\"log-process\">[AUTO_UPDATE]</span> <span class=\"log-info\">${{ steps.extract.outputs.latest_log_entry }}</span></div>"
-            sed -i "1s|^|<div class=\"log-box\" id=\"log-box\">${new_log_entry}|" temp_index.html # A bit of a hack to insert at top
+            html=""
+            if [[ "$issue_body" == *"【里程碑】"* ]]; then
+                text=$(echo "$issue_body" | sed -n 's/.*【里程碑】//p' | xargs)
+                html="<li class='timeline-item'><div class='timeline-icon'>⭐</div><span class='timeline-date'>${timestamp}</span><p class='timeline-content'>${text}</p></li>"
+            elif [[ "$issue_body" == *"【实验日志】"* ]]; then
+                text=$(echo "$issue_body" | sed -n 's/.*【实验日志】//p' | xargs)
+                html="<li class='timeline-item'><div class='timeline-icon'>🔬</div><span class='timeline-date'>${timestamp}</span><p class='timeline-content'><b>[实验日志]</b> ${text}</p></li>"
+            elif [[ "$issue_body" == *"【财务记录】"* ]]; then
+                item=$(echo "$issue_body" | grep -oP '项目: \K.*' | xargs)
+                amount=$(echo "$issue_body" | grep -oP '金额: \K.*' | xargs)
+                notes=$(echo "$issue_body" | grep -oP '备注: \K.*' | xargs)
+                html="<li class='timeline-item'><div class='timeline-icon'>💰</div><span class='timeline-date'>${timestamp}</span><p class='timeline-content'><b>[财务]</b> ${item} - <b>支出: ${amount}</b>. 备注: ${notes}</p></li>"
+            fi
+            new_timeline_entry="${html}\n<!--TIMELINE_ENTRIES-->"
+            replace_placeholder "TIMELINE_ENTRIES" "$new_timeline_entry"
           fi
-          
-          mv temp_index.html index.html
 
-      - name: Update HTML based on Timeline Event
-        if: "steps.extract.outputs.type == 'MILESTONE' || steps.extract.outputs.type == 'LAB_LOG' || steps.extract.outputs.type == 'FINANCE_LOG'"
-        run: |
-          timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          html=""
-          if [ "${{ steps.extract.outputs.type }}" == "MILESTONE" ]; then
-            html="<li class='timeline-item'><div class='timeline-icon'>⭐</div><span class='timeline-date'>${timestamp}</span><p class='timeline-content'>${{ steps.extract.outputs.text }}</p></li>"
-          elif [ "${{ steps.extract.outputs.type }}" == "LAB_LOG" ]; then
-            html="<li class='timeline-item'><div class='timeline-icon'>🔬</div><span class='timeline-date'>${timestamp}</span><p class='timeline-content'><b>[实验日志]</b> ${{ steps.extract.outputs.text }}</p></li>"
-          elif [ "${{ steps.extract.outputs.type }}" == "FINANCE_LOG" ]; then
-            html="<li class='timeline-item'><div class='timeline-icon'>💰</div><span class='timeline-date'>${timestamp}</span><p class='timeline-content'><b>[财务]</b> ${{ steps.extract.outputs.item }} - <b>支出: ${{ steps.extract.outputs.amount }}</b>. 备注: ${{ steps.extract.outputs.notes }}</p></li>"
-          fi
-          sed -i "/<ul class=\"timeline\" id=\"project-timeline\">/a ${html}" index.html
-      
       - name: Update Version, Timestamp, and Commit
-        if: steps.extract.outputs.type != 'UNKNOWN'
         run: |
           current_version=$(grep "<span id=\"version\">v" index.html | awk -F'v' '{print $2}' | awk -F'</span>' '{print $1}')
           new_version=$(echo "$current_version + 0.1" | bc)
@@ -108,7 +106,7 @@ jobs:
           git config --global user.email 'bot@lazarus.project'
           git add index.html
           if ! git diff --staged --quiet; then
-            git commit -m "Dashboard v${new_version}: ${{ steps.extract.outputs.type }} via issue #${{ github.event.issue.number }}"
+            git commit -m "Dashboard v${new_version}: Update via issue #${{ github.event.issue.number }}"
             git push
           else
             echo "No changes to commit."
@@ -117,7 +115,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.LAZARUS_TOKEN }}
           
       - name: Close the Issue
-        if: steps.extract.outputs.type != 'UNKNOWN'
         uses: peter-evans/close-issue@v3
         with:
-          comment: "感谢你的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅ (v5.2)"
+          comment: "感谢你的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅ (v6.0)"
