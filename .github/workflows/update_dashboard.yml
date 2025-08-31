@@ -1,4 +1,4 @@
-# Lazarus Project Dashboard Updater v7.0 ("Phoenix")
+# Lazarus Project Dashboard Updater - Cornerstone Version v7.1
 
 name: Update Dashboard via Issue
 
@@ -42,7 +42,7 @@ jobs:
                   new_version = current_version + 0.1
                   version_tag.string = f'v{new_version:.1f}'
               except (ValueError, TypeError):
-                  version_tag.string = 'v1.0' # Fallback
+                  version_tag.string = 'v1.0'
 
           timestamp_tag = soup.find('span', {'id': 'update-time'})
           if timestamp_tag:
@@ -80,17 +80,18 @@ jobs:
               log_entry_text = get_value('最新日志', data_body)
               if log_entry_text:
                   log_box = soup.find('div', {'id': 'log-box'})
-                  placeholder = next(c for c in log_box.children if isinstance(c, Comment) and 'LOG_ENTRIES_START' in str(c))
-                  new_log = soup.new_tag('div', **{'class': 'log-entry'})
-                  new_log.append(BeautifulSoup(f"<span class='log-timestamp'>[{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}]</span> <span class='log-process'>[AUTO_UPDATE]</span> {log_entry_text}", 'html.parser'))
-                  placeholder.insert_after(new_log)
+                  placeholder = next((c for c in log_box.children if isinstance(c, Comment) and 'LOG_ENTRIES_START' in str(c)), None)
+                  if placeholder:
+                    new_log = soup.new_tag('div', **{'class': 'log-entry'})
+                    new_log.append(BeautifulSoup(f"<span class='log-timestamp'>[{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}]</span> <span class='log-process'>[AUTO_UPDATE]</span> {log_entry_text}", 'html.parser'))
+                    placeholder.insert_after(new_log)
 
           # 2. Handle ALL TIMELINE Events
-          timeline_events = re.finditer(r"(【(里程碑|实验日志|财务记录)】(?:.|\n)*?)(?=\n【|$)", issue_body)
+          timeline_events = re.finditer(r"(【(里程碑|实验日志|财务记录)】(?:.|\n)*?)(?=\n\n【|\Z)", issue_body)
           timeline_entries = []
 
           for match in timeline_events:
-              event_block = match.group(1)
+              event_block = match.group(1).strip()
               event_type = match.group(2)
               text = event_block.replace(f"【{event_type}】", "").strip()
               timestamp = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
@@ -103,11 +104,13 @@ jobs:
                   content = f"<b>[实验日志]</b> {text}"
                   html = f"<li class='timeline-item'><div class='timeline-icon'>🔬</div><span class='timeline-date'>{timestamp}</span><p class='timeline-content'>{content}</p></li>"
               elif event_type == "财务记录":
-                  item = re.search(r"项目: (.*)", text, re.MULTILINE).group(1).strip()
-                  amount = re.search(r"金额: (.*)", text, re.MULTILINE).group(1).strip()
-                  notes = re.search(r"备注: (.*)", text, re.MULTILINE).group(1).strip()
-                  content = f"<b>[财务]</b> {item} - <b>支出: {amount}</b>. 备注: {notes}"
-                  html = f"<li class='timeline-item'><div class='timeline-icon'>💰</div><span class='timeline-date'>{timestamp}</span><p class='timeline-content'>{content}</p></li>"
+                  item_match = re.search(r"项目: (.*)", text, re.MULTILINE)
+                  amount_match = re.search(r"金额: (.*)", text, re.MULTILINE)
+                  notes_match = re.search(r"备注: (.*)", text, re.MULTILINE)
+                  if item_match and amount_match and notes_match:
+                      item, amount, notes = item_match.group(1).strip(), amount_match.group(1).strip(), notes_match.group(1).strip()
+                      content = f"<b>[财务]</b> {item} - <b>支出: {amount}</b>. 备注: {notes}"
+                      html = f"<li class='timeline-item'><div class='timeline-icon'>💰</div><span class='timeline-date'>{timestamp}</span><p class='timeline-content'>{content}</p></li>"
               
               if html:
                   timeline_entries.append(BeautifulSoup(html, 'html.parser'))
@@ -115,9 +118,29 @@ jobs:
           if timeline_entries:
               print(f"Found {len(timeline_entries)} timeline events to add.")
               timeline_ul = soup.find('ul', {'id': 'project-timeline'})
-              placeholder = next(c for c in timeline_ul.children if isinstance(c, Comment) and 'TIMELINE_ENTRIES_START' in str(c))
-              for entry in reversed(timeline_entries): # Insert in correct chronological order
-                  placeholder.insert_after(entry)
+              placeholder = next((c for c in timeline_ul.children if isinstance(c, Comment) and 'TIMELINE_ENTRIES_START' in str(c)), None)
+              if placeholder:
+                for entry in reversed(timeline_entries):
+                    placeholder.insert_after(entry)
 
           with open(html_path, 'w', encoding='utf-8') as f:
-  
+              f.write(str(soup))
+          END_PYTHON
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name 'Lazarus Diary Bot'
+          git config --global user.email 'bot@lazarus.project'
+          if ! git diff --quiet; then
+            git add index.html
+            current_version=$(grep "<span id=\"version\">v" index.html | awk -F'v' '{print $2}' | awk -F'</span>' '{print $1}')
+            git commit -m "Dashboard v${current_version}: Update via issue #${{ github.event.issue.number }}"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+      
+      - name: Close the Issue
+        uses: peter-evans/close-issue@v3
+        with:
+          comment: "感谢您的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅ (Cornerstone v7.1)"
