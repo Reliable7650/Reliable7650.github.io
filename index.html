@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Project Lazarus - Command Center</title>
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Lazarus - Command Center</title>
+    <style>
         :root { --bg-color: #1a1a1a; --card-bg-color: #2c2c2c; --text-color: #e0e0e0; --header-color: #ffffff; --accent-color: #00aaff; --success-color: #00cc66; --warning-color: #ffaa00; --progress-bar-bg: #444444; --border-color: #555555; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; }
         .container { max-width: 1200px; margin: 0 auto; }
@@ -26,12 +25,16 @@
         .task-card, .timeline-card, .log-container { background-color: var(--card-bg-color); border-radius: 8px; padding: 25px; }
         .task-card h2, .timeline-card h2, .log-container h2 { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
         .milestone { margin-bottom: 20px; }
-        .timeline { list-style: none; padding: 0; margin: 0; max-height: 450px; overflow-y: auto; }
+        .timeline { list-style: none; padding: 0; margin: 0; }
         .timeline-item { position: relative; padding-left: 30px; padding-bottom: 20px; border-left: 2px solid var(--timeline-color); }
         .timeline-item:last-child { padding-bottom: 0; border-left: 2px solid transparent; }
+        .timeline-item.hidden { display: none; }
         .timeline-icon { position: absolute; left: -11px; top: 0; width: 20px; height: 20px; border-radius: 50%; background-color: var(--accent-color); text-align: center; line-height: 20px; font-size: 12px; color: white; }
         .timeline-date { font-size: 0.8em; color: var(--warning-color); margin-bottom: 5px; display: block; }
         .timeline-content { font-size: 0.95em; }
+        .timeline-controls { text-align: center; margin-top: 15px; }
+        .view-all-btn { background: none; border: 1px solid var(--accent-color); color: var(--accent-color); padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: all 0.3s; }
+        .view-all-btn:hover { background: var(--accent-color); color: white; }
         .log-box { background-color: #111; border: 1px solid var(--border-color); height: 200px; overflow-y: scroll; padding: 15px; border-radius: 5px; font-family: "Courier New", Courier, monospace; font-size: 0.9em; }
         .log-entry { margin-bottom: 8px; line-height: 1.4; }
         .log-timestamp { color: var(--warning-color); }
@@ -40,83 +43,111 @@
     </style>
 </head>
 <body>
-<div class="container">
-<header class="header">
-<h1>Project Lazarus - Command Center</h1>
-<p>我们的日记本：记录延长犬类寿命革命的每一步 <span id="version">v1.1</span></p>
-<p class="last-updated">最后更新时间: <span id="update-time">2025-08-31 16:35:06 UTC</span></p>
-</header>
-<section class="key-metrics">
-<div class="metric-card">
-<h3>项目总进度</h3>
-<div class="value" id="total_progress_val">25%</div>
-<div class="progress-bar-container"><div class="progress-bar" id="total_progress_bar" style="width: 25%;"></div></div>
-</div>
-<div class="metric-card">
-<h3>核心系统心跳</h3>
-<div class="value operational">OPERATIONAL ✅</div>
-</div>
-<div class="metric-card">
-<h3>当前状态</h3>
-<div class="value" style="font-size: 1.5em;">准备就绪</div>
-</div>
-</section>
-<main class="main-content">
-<div class="left-column">
-<div class="task-card">
-<h2>任务一: 犬类衰老数字地图</h2>
-<div class="milestone">
-<h3>里程碑 1: DAP 数据接入</h3>
-<p><b>状态:</b> <span id="dap1_status">申请已提交 &amp; 等待审批</span></p>
-<div class="progress-bar-container"><div class="progress-bar" id="dap1_progress" style="width: 100%;">100%</div></div>
-</div>
-<div class="milestone">
-<h3>里程碑 2: 多源数据整合</h3>
-<p>状态: <span id="dap2_status">正在并行拉取公共数据</span></p>
-<div class="progress-bar-container"><div class="progress-bar" id="dap2_progress" style="width: 40%;">40%</div></div>
-</div>
-<div class="milestone">
-<h3>里程碑 3: 知识图谱构建</h3>
-<p>状态: <span id="dap3_status">核心实体与关系模式设计中</span></p>
-<div class="progress-bar-container"><div class="progress-bar" id="dap3_progress" style="width: 15%;">15%</div></div>
-</div>
-</div>
-<div class="task-card">
-<h2>任务二: 抗衰老候选分子库</h2>
-<div class="milestone">
-<h3>里程碑 1: 化合物数据采集</h3>
-<p>状态: <span id="mol1_status">已采集 6,211,984 种化合物</span></p>
-<div class="progress-bar-container"><div class="progress-bar" id="mol1_progress" style="width: 85%;">85%</div></div>
-</div>
-<div class="milestone">
-<h3>里程碑 2: 分子“画像”与筛选</h3>
-<p>状态: <span id="mol2_status">计算化学评估流水线运行中</span></p>
-<div class="progress-bar-container"><div class="progress-bar" id="mol2_progress" style="width: 30%;">30%</div></div>
-</div>
-<div class="milestone">
-<h3>里程碑 3: 精选分子库生成</h3>
-<p>状态: <span id="mol3_status">待筛选分子数: 3,102</span></p>
-<div class="progress-bar-container"><div class="progress-bar" id="mol3_progress" style="width: 12%;">12%</div></div>
-</div>
-</div>
-</div>
-<div class="right-column">
-<div class="timeline-card">
-<h2>项目大事记</h2>
-<ul class="timeline" id="project-timeline">
-<!--TIMELINE_ENTRIES_START--><li class="timeline-item"><div class="timeline-icon">⭐</div><span class="timeline-date">2025-08-31 16:35:06 UTC</span><p class="timeline-content">我们为“拉撒-路计划”成功部署了一个全自动化的、能够记录项目历史的指挥中心。这是我们高效协作和伟大愿景的基石。</p></li><li class="timeline-item"><div class="timeline-icon">💰</div><span class="timeline-date">2025-08-31 16:35:06 UTC</span><p class="timeline-content"><b>[财务]</b> Google Pro服务账号一年 - <b>支出: 30 CNY</b>. 备注: 作为第二人工智能助手。</p></li><li class="timeline-item"><div class="timeline-icon">⭐</div><span class="timeline-date">2025-08-31 16:35:06 UTC</span><p class="timeline-content">指挥中心升级至最终稳定版，所有模块已恢复并采用占位符技术重铸。</p></li>
-<!--TIMELINE_ENTRIES_END-->
-</ul>
-</div>
-<div class="log-container">
-<h2>实时活动日志</h2>
-<div class="log-box" id="log-box">
-<!--LOG_ENTRIES_START--><div class="log-entry"><span class="log-timestamp">[2025-08-31 16:35:06 UTC]</span> <span class="log-process">[AUTO_UPDATE]</span> 指挥中心升级至“基石版”，所有历史数据已恢复。</div>
-<!--LOG_ENTRIES_END-->
-</div>
-</div>
-</div>
-</main>
-</div>
+    <div class="container">
+        <header class="header">
+            <h1>Project Lazarus - Command Center</h1>
+            <p>我们的日记本：记录延长犬类寿命革命的每一步 <span id="version">v1.0</span></p>
+            <p class="last-updated">最后更新时间: <span id="update-time">...</span></p>
+        </header>
+        <section class="key-metrics">
+            <div class="metric-card">
+                <h3>项目总进度</h3>
+                <div class="value" id="total_progress_val">0%</div>
+                <div class="progress-bar-container"><div class="progress-bar" id="total_progress_bar" style="width: 0%;"></div></div>
+            </div>
+            <div class="metric-card">
+                <h3>核心系统心跳</h3>
+                <div class="value operational">OPERATIONAL ✅</div>
+            </div>
+            <div class="metric-card">
+                <h3>当前状态</h3>
+                <div class="value" style="font-size: 1.5em;">准备就绪</div>
+            </div>
+        </section>
+        <main class="main-content">
+            <div class="left-column">
+                <div class="task-card">
+                    <h2>任务一: 犬类衰老数字地图</h2>
+                    <div class="milestone">
+                        <h3>里程碑 1: DAP 数据接入</h3>
+                        <p><b>状态:</b> <span id="dap1_status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" id="dap1_progress" style="width: 0%;">0%</div></div>
+                    </div>
+                    <div class="milestone">
+                        <h3>里程碑 2: 多源数据整合</h3>
+                        <p>状态: <span id="dap2_status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" id="dap2_progress" style="width: 0%;">0%</div></div>
+                    </div>
+                    <div class="milestone">
+                        <h3>里程碑 3: 知识图谱构建</h3>
+                        <p>状态: <span id="dap3_status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" id="dap3_progress" style="width: 0%;">0%</div></div>
+                    </div>
+                </div>
+                <div class="task-card">
+                    <h2>任务二: 抗衰老候选分子库</h2>
+                     <div class="milestone">
+                        <h3>里程碑 1: 化合物数据采集</h3>
+                        <p>状态: <span id="mol1_status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" id="mol1_progress" style="width: 0%;">0%</div></div>
+                    </div>
+                     <div class="milestone">
+                        <h3>里程碑 2: 分子“画像”与筛选</h3>
+                        <p>状态: <span id="mol2_status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" id="mol2_progress" style="width: 0%;">0%</div></div>
+                    </div>
+                     <div class="milestone">
+                        <h3>里程碑 3: 精选分子库生成</h3>
+                        <p>状态: <span id="mol3_status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" id="mol3_progress" style="width: 0%;">0%</div></div>
+                    </div>
+                </div>
+            </div>
+            <div class="right-column">
+                <div class="timeline-card">
+                    <h2>项目大事记</h2>
+                    <ul class="timeline" id="project-timeline">
+                        <!--TIMELINE_ENTRIES_START-->
+                        <!--TIMELINE_ENTRIES_END-->
+                    </ul>
+                    <div class="timeline-controls" id="timeline-controls">
+                        <!-- Controls will be added by script -->
+                    </div>
+                </div>
+                <div class="log-container">
+                    <h2>实时活动日志</h2>
+                    <div class="log-box" id="log-box">
+                        <!--LOG_ENTRIES_START-->
+                        <!--LOG_ENTRIES_END-->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        document。addEventListener('DOMContentLoaded'， function() {
+            const timeline = document。getElementById('project-timeline');
+            const controls = document。getElementById('timeline-controls');
+            const items = timeline。getElementsByClassName('timeline-item');
+            const limit = 5;
+
+            if (items。length > limit) {
+                for (let i = limit; i < items.length; i++) {
+                    items[i]。classList。add('hidden');
+                }
+                
+                const button = document。createElement('button');
+                button.innerText = `查看全部 ${items.length} 条历史记录`;
+                button.className = 'view-all-btn';
+                button.onclick = function() {
+                    for (let i = limit; i < items.length; i++) {
+                        items[i].classList.remove('hidden');
+                    }
+                    button.style.display = 'none';
+                };
+                controls.appendChild(button);
+            }
+        });
+    </script>
 </body>
 </html>
