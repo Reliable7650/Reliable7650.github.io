@@ -98,37 +98,26 @@
             flex-direction: column;
             gap: 20px;
         }
-        .task-card, .timeline-card {
+        .task-card, .timeline-card, .log-container {
             background-color: var(--card-bg-color);
             border-radius: 8px;
             padding: 25px;
         }
-        .task-card h2, .timeline-card h2 {
+        .task-card h2, .timeline-card h2, .log-container h2 {
             margin: 0 0 20px;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
             color: var(--header-color);
         }
         .milestone {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
-        .milestone-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .milestone-header span {
-            font-weight: bold;
-        }
-        .milestone-status {
-            font-size: 1.2em;
-        }
-        /* New Timeline Styles */
         .timeline {
             list-style: none;
             padding: 0;
             margin: 0;
+            max-height: 500px;
+            overflow-y: auto;
         }
         .timeline-item {
             position: relative;
@@ -137,6 +126,7 @@
             border-left: 2px solid var(--timeline-color);
         }
         .timeline-item:last-child {
+            padding-bottom: 0;
             border-left: 2px solid transparent;
         }
         .timeline-icon {
@@ -161,6 +151,37 @@
         .timeline-content {
             font-size: 0.95em;
         }
+        .log-box {
+            background-color: #111;
+            border: 1px solid var(--border-color);
+            height: 200px;
+            overflow-y: scroll;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.9em;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .log-timestamp {
+            color: var(--warning-color);
+        }
+        .log-process {
+            color: var(--accent-color);
+        }
+        .log-info {
+            color: var(--text-color);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.8em;
+            color: #777;
+        }
 
         @media (max-width: 900px) {
             .main-content {
@@ -174,24 +195,24 @@
         <header class="header">
             <h1>Project Lazarus - Command Center</h1>
             <p>我们的日记本：记录延长犬类寿命革命的每一步</p>
-            <p class="last-updated">最后更新时间: <span id="update-time">2025-08-31 14:45:53 UTC</span></p>
+            <p class="last-updated">最后更新时间: <span id="update-time">2025-08-31 12:00:00 UTC</span></p>
         </header>
 
         <section class="key-metrics">
             <div class="metric-card">
                 <h3>项目总进度</h3>
-                <div class="value">25%</div>
+                <div class="value" id="total_progress_val">0%</div>
                 <div class="progress-bar-container" style="margin-top: 10px;">
-                    <div class="progress-bar" style="width: 25%;"></div>
+                    <div class="progress-bar" id="total_progress_bar" style="width: 0%;"></div>
                 </div>
             </div>
             <div class="metric-card">
                 <h3>核心系统心跳</h3>
                 <div class="value operational">OPERATIONAL ✅</div>
             </div>
-            <div class="metric-card">
+             <div class="metric-card">
                 <h3>当前状态</h3>
-                <div class="value" style="font-size: 1.5em;">准备就绪</div>
+                <div class="value" style="font-size: 1.5em;" id="current_status">准备就绪</div>
             </div>
         </section>
 
@@ -199,29 +220,39 @@
             <div class="task-grid">
                 <div class="task-card">
                     <h2>任务一: 犬类衰老数字地图</h2>
-                    <div class="milestone">
-                        <div class="milestone-header">
-                            <span>里程碑 1: DAP 数据接入</span>
-                            <span class="milestone-status">⏳</span>
-                        </div>
-                        <p style="font-size: 0.9em; color: #aaa;"><b style="color: var(--warning-color);">状态: 尚未开始</b></p>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" style="width: 0%;">0%</div>
-                        </div>
+                    <div class="milestone" id="dap1">
+                        <h3>里程碑 1: DAP 数据接入</h3>
+                        <p><b>状态:</b> <span class="status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;">0%</div></div>
+                    </div>
+                    <div class="milestone" id="dap2">
+                        <h3>里程碑 2: 多源数据整合</h3>
+                        <p>状态: <span class="status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;">0%</div></div>
+                    </div>
+                    <div class="milestone" id="dap3">
+                        <h3>里程碑 3: 知识图谱构建</h3>
+                        <p>状态: <span class="status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;">0%</div></div>
                     </div>
                 </div>
 
                 <div class="task-card">
                     <h2>任务二: 抗衰老候选分子库</h2>
-                    <div class="milestone">
-                        <div class="milestone-header">
-                            <span>里程碑 1: 化合物数据采集</span>
-                            <span class="milestone-status">⏳</span>
-                        </div>
-                        <p style="font-size: 0.9em; color: #aaa;">状态: 尚未开始</p>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar" style="width: 0%;">0%</div>
-                        </div>
+                     <div class="milestone" id="mol1">
+                        <h3>里程碑 1: 化合物数据采集</h3>
+                        <p>状态: <span class="status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;">0%</div></div>
+                    </div>
+                     <div class="milestone" id="mol2">
+                        <h3>里程碑 2: 分子“画像”与筛选</h3>
+                        <p>状态: <span class="status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;">0%</div></div>
+                    </div>
+                     <div class="milestone" id="mol3">
+                        <h3>里程碑 3: 精选分子库生成</h3>
+                        <p>状态: <span class="status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;">0%</div></div>
                     </div>
                 </div>
             </div>
@@ -230,17 +261,22 @@
                 <div class="timeline-card">
                     <h2>项目大事记</h2>
                     <ul class="timeline" id="project-timeline">
-<li class='timeline-item'><div class='timeline-icon'>💰</div><span class='timeline-date'>2025-08-31 14:24:48 UTC</span><p class='timeline-content'><b>[财务]</b> Goole pro服务账号 一年 - <b>支出: 30 CNY</b>. 备注: 作为第二人工智能助手。</p></li>
-<li class="timeline-item"><div class="timeline-icon">⭐</div><span class="timeline-date">2025-08-31 10:48:09 UTC</span><p class="timeline-content">我们为“拉撒路计划”成功部署了一个全自动化的、能够记录项目历史的指挥中心。这是我们高效协作和伟大愿景的基石。我们做到了！</p></li>
                         <!-- MILESTONES WILL BE AUTO-INSERTED HERE -->
                     </ul>
                 </div>
             </div>
         </main>
-    </div>
 
-    <script>
-        document.getElementById('update-time').textContent = new Date().toISOString();
-    </script>
+        <section class="log-container">
+            <h2>实时活动日志</h2>
+            <div class="log-box" id="log-box">
+                <!-- LOG ENTRIES WILL BE AUTO-INSERTED HERE -->
+            </div>
+        </section>
+        
+        <footer class="footer" id="footer">
+            Dashboard Version: v0.1
+        </footer>
+    </div>
 </body>
 </html>
