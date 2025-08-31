@@ -1,4 +1,4 @@
-# Lazarus Project Dashboard Updater v6.0 ("Perfection")
+# Lazarus Project Dashboard Updater - Genesis Version
 
 name: Update Dashboard via Issue
 
@@ -17,104 +17,118 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Update HTML File
-        id: update_html
+      - name: Update Dashboard
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          GITHUB_TOKEN: ${{ secrets.LAZARUS_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          # Function to replace a placeholder in a file
-          replace_placeholder() {
-            local placeholder=$1
-            local value=$2
-            # Use a unique delimiter to avoid conflicts
-            sed -i "s|<!--${placeholder}-->|${value}|g" index.html
-          }
+          pip install beautifulsoup4
+          python - <<'END_PYTHON'
+          import os
+          import re
+          from datetime import datetime
+          from bs4 import BeautifulSoup
 
-          # Read the entire issue body
-          issue_body="${{ github.event.issue.body }}"
+          issue_body = os.getenv('ISSUE_BODY', '')
+          html_path = 'index.html'
 
-          # Handle DATA_UPDATE
-          if [[ "$issue_body" == *"【数据更新】"* ]]; then
-            echo "Processing DATA_UPDATE..."
-            # Extract and replace each value
-            replace_placeholder "DAP1_STATUS" "$(echo "$issue_body" | grep -oP 'dap1_status: \K.*')"
-            replace_placeholder "DAP1_PROGRESS_VAL" "$(echo "$issue_body" | grep -oP 'dap1_progress: \K.*')"
-            replace_placeholder "DAP1_PROGRESS_BAR" "$(echo "$issue_body" | grep -oP 'dap1_progress: \K.*')"
+          # Read the current HTML
+          with open(html_path, 'r', encoding='utf-8') as f:
+              soup = BeautifulSoup(f, 'html.parser')
 
-            replace_placeholder "DAP2_STATUS" "$(echo "$issue_body" | grep -oP 'dap2_status: \K.*')"
-            replace_placeholder "DAP2_PROGRESS_VAL" "$(echo "$issue_body" | grep -oP 'dap2_progress: \K.*')"
-            replace_placeholder "DAP2_PROGRESS_BAR" "$(echo "$issue_body" | grep -oP 'dap2_progress: \K.*')"
+          # --- VERSION & TIMESTAMP ---
+          version_tag = soup.find('span', {'id': 'version'})
+          if version_tag:
+              current_version = float(version_tag.text.replace('v', ''))
+              new_version = current_version + 0.1
+              version_tag.string = f'v{new_version:.1f}'
 
-            replace_placeholder "DAP3_STATUS" "$(echo "$issue_body" | grep -oP 'dap3_status: \K.*')"
-            replace_placeholder "DAP3_PROGRESS_VAL" "$(echo "$issue_body" | grep -oP 'dap3_progress: \K.*')"
-            replace_placeholder "DAP3_PROGRESS_BAR" "$(echo "$issue_body" | grep -oP 'dap3_progress: \K.*')"
-            
-            replace_placeholder "MOL1_STATUS" "$(echo "$issue_body" | grep -oP 'mol1_status: \K.*')"
-            replace_placeholder "MOL1_PROGRESS_VAL" "$(echo "$issue_body" | grep -oP 'mol1_progress: \K.*')"
-            replace_placeholder "MOL1_PROGRESS_BAR" "$(echo "$issue_body" | grep -oP 'mol1_progress: \K.*')"
+          timestamp_tag = soup.find('span', {'id': 'update-time'})
+          if timestamp_tag:
+              timestamp_tag.string = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')
 
-            replace_placeholder "MOL2_STATUS" "$(echo "$issue_body" | grep -oP 'mol2_status: \K.*')"
-            replace_placeholder "MOL2_PROGRESS_VAL" "$(echo "$issue_body" | grep -oP 'mol2_progress: \K.*')"
-            replace_placeholder "MOL2_PROGRESS_BAR" "$(echo "$issue_body" | grep -oP 'mol2_progress: \K.*')"
-            
-            replace_placeholder "MOL3_STATUS" "$(echo "$issue_body" | grep -oP 'mol3_status: \K.*')"
-            replace_placeholder "MOL3_PROGRESS_VAL" "$(echo "$issue_body" | grep -oP 'mol3_progress: \K.*')"
-            replace_placeholder "MOL3_PROGRESS_BAR" "$(echo "$issue_body" | grep -oP 'mol3_progress: \K.*')"
-            
-            # Update Total Progress
-            total_progress=$(echo "$issue_body" | grep -oP '项目总进度: \K.*')
-            sed -i "s|<div class=\"value\" id=\"total_progress_val\">.*%</div>|<div class=\"value\" id=\"total_progress_val\">${total_progress}%</div>|" index.html
-            sed -i "s|<div class=\"progress-bar\" id=\"total_progress_bar\" style=\"width: .*%;\">|<div class=\"progress-bar\" id=\"total_progress_bar\" style=\"width: ${total_progress}%;\">|" index.html
+          # --- EVENT HANDLING ---
+          def update_data(soup, body):
+              print("Processing DATA_UPDATE...")
+              
+              def get_value(key):
+                  match = re.search(f"{key}: (.*)", body)
+                  return match.group(1).strip() if match else None
 
-            # Update Log Box
-            log_entry=$(echo "$issue_body" | grep -oP '最新日志: \K.*')
-            if [ -n "$log_entry" ]; then
-                timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-                new_log="<div class='log-entry'><span class='log-timestamp'>[${timestamp}]</span> <span class='log-process'>[AUTO_UPDATE]</span> ${log_entry}</div>\n<!--LOG_ENTRIES-->"
-                replace_placeholder "LOG_ENTRIES" "$new_log"
-            fi
-            
-          # Handle TIMELINE Events
-          elif [[ "$issue_body" == *"【里程碑】"* || "$issue_body" == *"【实验日志】"* || "$issue_body" == *"【财务记录】"* ]]; then
-            echo "Processing TIMELINE Event..."
-            timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-            html=""
-            if [[ "$issue_body" == *"【里程碑】"* ]]; then
-                text=$(echo "$issue_body" | sed -n 's/.*【里程碑】//p' | xargs)
-                html="<li class='timeline-item'><div class='timeline-icon'>⭐</div><span class='timeline-date'>${timestamp}</span><p class='timeline-content'>${text}</p></li>"
-            elif [[ "$issue_body" == *"【实验日志】"* ]]; then
-                text=$(echo "$issue_body" | sed -n 's/.*【实验日志】//p' | xargs)
-                html="<li class='timeline-item'><div class='timeline-icon'>🔬</div><span class='timeline-date'>${timestamp}</span><p class='timeline-content'><b>[实验日志]</b> ${text}</p></li>"
-            elif [[ "$issue_body" == *"【财务记录】"* ]]; then
-                item=$(echo "$issue_body" | grep -oP '项目: \K.*' | xargs)
-                amount=$(echo "$issue_body" | grep -oP '金额: \K.*' | xargs)
-                notes=$(echo "$issue_body" | grep -oP '备注: \K.*' | xargs)
-                html="<li class='timeline-item'><div class='timeline-icon'>💰</div><span class='timeline-date'>${timestamp}</span><p class='timeline-content'><b>[财务]</b> ${item} - <b>支出: ${amount}</b>. 备注: ${notes}</p></li>"
-            fi
-            new_timeline_entry="${html}\n<!--TIMELINE_ENTRIES-->"
-            replace_placeholder "TIMELINE_ENTRIES" "$new_timeline_entry"
-          fi
+              # Update Total Progress
+              total_progress = get_value('项目总进度')
+              if total_progress:
+                  soup.find('div', {'id': 'total_progress_val'}).string = f"{total_progress}%"
+                  soup.find('div', {'id': 'total_progress_bar'})['style'] = f"width: {total_progress}%;"
+              
+              # Update Milestones
+              for i in range(1, 4):
+                  for prefix in ['dap', 'mol']:
+                      milestone_id = f"{prefix}{i}"
+                      status = get_value(f"{milestone_id}_status")
+                      progress = get_value(f"{milestone_id}_progress")
+                      if status:
+                          soup.find('span', {'id': f'{milestone_id}_status'}).string = status
+                      if progress:
+                          tag = soup.find('div', {'id': f'{milestone_id}_progress'})
+                          tag['style'] = f"width: {progress}%;"
+                          tag.string = f"{progress}%"
+              
+              # Update Log Box
+              log_entry_text = get_value('最新日志')
+              if log_entry_text:
+                  log_box = soup.find('div', {'id': 'log-box'})
+                  new_log = soup.new_tag('div', **{'class': 'log-entry'})
+                  new_log.append(BeautifulSoup(f"<span class='log-timestamp'>[{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}]</span> <span class='log-process'>[AUTO_UPDATE]</span> {log_entry_text}", 'html.parser'))
+                  log_box.insert(0, new_log)
 
-      - name: Update Version, Timestamp, and Commit
+          def add_timeline_event(soup, body, event_type, icon, prefix):
+              print(f"Processing {event_type}...")
+              text = re.search(f"【{event_type}】(.*)", body, re.DOTALL).group(1).strip()
+              
+              if event_type == "财务记录":
+                  item = re.search(r"项目: (.*)", text).group(1).strip()
+                  amount = re.search(r"金额: (.*)", text).group(1).strip()
+                  notes = re.search(r"备注: (.*)", text).group(1).strip()
+                  content = f"<b>[财务]</b> {item} - <b>支出: {amount}</b>. 备注: {notes}"
+              else:
+                  content = f"<b>[{prefix}]</b> {text}" if prefix else text
+              
+              timeline_ul = soup.find('ul', {'id': 'project-timeline'})
+              new_item = soup.new_tag('li', **{'class': 'timeline-item'})
+              new_item.append(BeautifulSoup(f"<div class='timeline-icon'>{icon}</div><span class='timeline-date'>{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}</span><p class='timeline-content'>{content}</p>", 'html.parser'))
+              timeline_ul.insert(0, new_item)
+
+          # Determine action based on keyword
+          if '【数据更新】' in issue_body:
+              update_data(soup, issue_body)
+          elif '【里程碑】' in issue_body:
+              add_timeline_event(soup, issue_body, "里程碑", "⭐", "")
+          elif '【实验日志】' in issue_body:
+              add_timeline_event(soup, issue_body, "实验日志", "🔬", "实验日志")
+          elif '【财务记录】' in issue_body:
+              add_timeline_event(soup, issue_body, "财务记录", "💰", "财务")
+
+          # Write the updated HTML back
+          with open(html_path, 'w', encoding='utf-8') as f:
+              f.write(str(soup))
+          END_PYTHON
+
+      - name: Commit and Push Changes
         run: |
-          current_version=$(grep "<span id=\"version\">v" index.html | awk -F'v' '{print $2}' | awk -F'</span>' '{print $1}')
-          new_version=$(echo "$current_version + 0.1" | bc)
-          sed -i "s|<span id=\"version\">v.*</span>|<span id=\"version\">v${new_version}</span>|" index.html
-          
-          timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          sed -i "s|<span id=\"update-time\">.*</span>|<span id=\"update-time\">${timestamp}</span>|" index.html
-          
           git config --global user.name 'Lazarus Diary Bot'
           git config --global user.email 'bot@lazarus.project'
-          git add index.html
-          if ! git diff --staged --quiet; then
-            git commit -m "Dashboard v${new_version}: Update via issue #${{ github.event.issue.number }}"
+          if ! git diff --quiet; then
+            git add index.html
+            current_version=$(grep "<span id=\"version\">v" index.html | awk -F'v' '{print $2}' | awk -F'</span>' '{print $1}')
+            git commit -m "Dashboard v${current_version}: Update via issue #${{ env.ISSUE_NUMBER }}"
             git push
           else
             echo "No changes to commit."
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.LAZARUS_TOKEN }}
-          
+      
       - name: Close the Issue
         uses: peter-evans/close-issue@v3
         with:
-          comment: "感谢你的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅ (v6.0)"
+          comment: "感谢你的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅ (Genesis v1.0)"
