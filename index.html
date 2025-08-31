@@ -153,6 +153,9 @@
         .log-info {
             color: var(--text-color);
         }
+        .status-submitted {
+            color: var(--warning-color);
+        }
     </style>
 </head>
 <body>
@@ -166,9 +169,9 @@
         <section class="key-metrics">
             <div class="metric-card">
                 <h3>项目总进度</h3>
-                <div class="value">15%</div>
+                <div class="value">20%</div>
                 <div class="progress-bar-container" style="margin-top: 10px;">
-                    <div class="progress-bar" style="width: 15%;"></div>
+                    <div class="progress-bar" style="width: 20%;"></div>
                 </div>
             </div>
             <div class="metric-card">
@@ -177,7 +180,7 @@
             </div>
             <div class="metric-card">
                 <h3>当前计算资源负载</h3>
-                <div class="value">35.7%</div>
+                <div class="value">38.1%</div>
             </div>
         </section>
 
@@ -187,11 +190,11 @@
                 <div class="milestone">
                     <div class="milestone-header">
                         <span>里程碑 1: DAP 数据接入</span>
-                        <span class="milestone-status">🔄</span>
+                        <span class="milestone-status">✅</span>
                     </div>
-                    <p style="font-size: 0.9em; color: #aaa;">状态: 数据访问申请已提交，等待审批</p>
+                    <p class="status-submitted" style="font-size: 0.9em;"><b>状态: 申请已提交 & 等待审批</b></p>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 90%;">90%</div>
+                        <div class="progress-bar" style="width: 100%; background-color: var(--success-color);">100%</div>
                     </div>
                 </div>
                 <div class="milestone">
@@ -201,7 +204,7 @@
                     </div>
                     <p style="font-size: 0.9em; color: #aaa;">状态: 正在并行拉取并处理公共数据库数据</p>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 25%;">25%</div>
+                        <div class="progress-bar" style="width: 38%;">38%</div>
                     </div>
                 </div>
                 <div class="milestone">
@@ -211,7 +214,7 @@
                     </div>
                      <p style="font-size: 0.9em; color: #aaa;">状态: 核心实体与关系模式设计中</p>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 10%;">10%</div>
+                        <div class="progress-bar" style="width: 15%;">15%</div>
                     </div>
                 </div>
             </div>
@@ -223,9 +226,9 @@
                         <span>里程碑 1: 化合物数据采集</span>
                         <span class="milestone-status">🔄</span>
                     </div>
-                    <p style="font-size: 0.9em; color: #aaa;">状态: 已采集 2,154,831 种化合物数据</p>
+                    <p style="font-size: 0.9em; color: #aaa;">状态: 已采集 3,942,118 种化合物数据</p>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 40%;">40%</div>
+                        <div class="progress-bar" style="width: 65%;">65%</div>
                     </div>
                 </div>
                 <div class="milestone">
@@ -235,7 +238,7 @@
                     </div>
                     <p style="font-size: 0.9em; color: #aaa;">状态: 计算化学评估流水线运行中</p>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 18%;">18%</div>
+                        <div class="progress-bar" style="width: 28%;">28%</div>
                     </div>
                 </div>
                 <div class="milestone">
@@ -243,9 +246,9 @@
                         <span>里程碑 3: 精选分子库生成</span>
                         <span class="milestone-status">⏳</span>
                     </div>
-                     <p style="font-size: 0.9em; color: #aaa;">状态: 当前入库高潜力分子数: 1,289</p>
+                     <p style="font-size: 0.9em; color: #aaa;">状态: 当前入库高潜力分子数: 2,511</p>
                     <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 5%;">5%</div>
+                        <div class="progress-bar" style="width: 8%;">8%</div>
                     </div>
                 </div>
             </div>
@@ -255,29 +258,29 @@
             <h2>实时活动日志</h2>
             <div class="log-box">
                 <div class="log-entry">
-                    <span class="log-timestamp">[2025-08-31 08:35:12 UTC]</span>
-                    <span class="log-process">[PROCESS_ID: 9112]</span>
-                    <span class="log-info">Successfully parsed and stored ChEMBL compound CHEMBL1201377 (Rapamycin) bioactivity data.</span>
+                    <span class="log-timestamp">[2025-08-31 09:15:21 UTC]</span>
+                    <span class="log-process">[PROJECT_MILESTONE]</span>
+                    <span class="log-info status-submitted">DAP data access application successfully submitted by partner. Status updated.</span>
                 </div>
                 <div class="log-entry">
-                    <span class="log-timestamp">[2025-08-31 08:35:10 UTC]</span>
-                    <span class="log-process">[PROCESS_ID: 8840]</span>
-                    <span class="log-info">Mapping DAP phenotype code 'dap_hles_kidney_v1' to 'Disease:Kidney_Disease' node in knowledge graph schema.</span>
+                    <span class="log-timestamp">[2025-08-31 09:15:18 UTC]</span>
+                    <span class="log-process">[PROCESS_ID: 9118]</span>
+                    <span class="log-info">Successfully parsed and stored ChEMBL compound CHEMBL112 (Metformin) bioactivity data.</span>
                 </div>
                 <div class="log-entry">
-                    <span class="log-timestamp">[2025-08-31 08:35:08 UTC]</span>
-                    <span class="log-process">[PROCESS_ID: 9111]</span>
-                    <span class="log-info">Calculating ADMET properties for molecule batch #1453 (compounds 1,453,001 to 1,454,000).</span>
+                    <span class="log-timestamp">[2025-08-31 09:15:15 UTC]</span>
+                    <span class="log-process">[PROCESS_ID: 8845]</span>
+                    <span class="log-info">Creating new relationship type 'targets_gene' in knowledge graph schema.</span>
                 </div>
                 <div class="log-entry">
-                    <span class="log-timestamp">[2025-08-31 08:35:05 UTC]</span>
-                    <span class="log-process">[PROCESS_ID: 8839]</span>
-                    <span class="log-info">Running NLP entity extraction model on PubMed abstract PMID:312XXXXX. Identified 'Canine' and 'mTOR'.</span>
+                    <span class="log-timestamp">[2025-08-31 09:15:12 UTC]</span>
+                    <span class="log-process">[PROCESS_ID: 9117]</span>
+                    <span class="log-info">Calculating ADMET properties for molecule batch #3115 (compounds 3,115,001 to 3,116,000).</span>
                 </div>
                  <div class="log-entry">
-                    <span class="log-timestamp">[2025-08-31 08:35:02 UTC]</span>
-                    <span class="log-process">[PROCESS_ID: 9111]</span>
-                    <span class="log-info">API call to PubChem for compounds related to 'Senolytic'. Request sent. 1.2M results pending download.</span>
+                    <span class="log-timestamp">[2025-08-31 09:15:09 UTC]</span>
+                    <span class="log-process">[PROCESS_ID: 8844]</span>
+                    <span class="log-info">Running NLP entity extraction model on PubMed abstract PMID:334XXXXX. Identified 'Canine', 'Sirtuin 1', and 'Resveratrol'.</span>
                 </div>
             </div>
         </section>
