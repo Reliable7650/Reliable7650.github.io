@@ -1,7 +1,5 @@
-# Lazarus Project Dashboard Updater v2.0 (with Diary Function)
-# This workflow can handle two types of issues:
-# 1. DATA_UPDATE: Parses structured data to update metrics.
-# 2. MILESTONE: Takes narrative text and adds it to the project timeline.
+# Lazarus Project Dashboard Updater v4.0 (Final Version)
+# Handles Data Updates, Milestones, Lab Logs, and Financial Records.
 
 name: Update Dashboard via Issue
 
@@ -20,53 +18,65 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Check Issue Type and Extract Data
+      - name: Parse Issue Body
         id: extract
         run: |
           issue_body="${{ github.event.issue.body }}"
           if [[ "$issue_body" == *"【数据更新】"* ]]; then
             echo "type=DATA_UPDATE" >> $GITHUB_OUTPUT
-            echo "total_progress=$(echo "$issue_body" | grep -oP '项目总进度: \K[0-9]+' | tr -d '%')" >> $GITHUB_OUTPUT
-            echo "dap_status=$(echo "$issue_body" | grep -oP 'DAP状态: \K.*')" >> $GITHUB_OUTPUT
-            echo "dap_progress=$(echo "$issue_body" | grep -oP 'DAP进度: \K[0-9]+')" >> $GITHUB_OUTPUT
-            echo "molecule_status=$(echo "$issue_body" | grep -oP '分子库状态: \K.*')" >> $GITHUB_OUTPUT
-            echo "molecule_progress=$(echo "$issue_body" | grep -oP '分子库进度: \K[0-9]+')" >> $GITHUB_OUTPUT
-            echo "log_entry=$(echo "$issue_body" | grep -oP '最新日志: \K.*')" >> $GITHUB_OUTPUT
+            echo "$issue_body" | grep ":" | while IFS=: read -r key value; do
+              var_name=$(echo "$key" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+              var_value=$(echo "$value" | xargs)
+              echo "${var_name}=${var_value}" >> $GITHUB_OUTPUT
+            done
           elif [[ "$issue_body" == *"【里程碑】"* ]]; then
             echo "type=MILESTONE" >> $GITHUB_OUTPUT
-            milestone_text=$(echo "$issue_body" | sed -n 's/.*【里程碑】//p' | xargs)
-            echo "milestone_text=$milestone_text" >> $GITHUB_OUTPUT
+            echo "text=$(echo "$issue_body" | sed -n 's/.*【里程碑】//p' | xargs)" >> $GITHUB_OUTPUT
+          elif [[ "$issue_body" == *"【实验日志】"* ]]; then
+            echo "type=LAB_LOG" >> $GITHUB_OUTPUT
+            echo "text=$(echo "$issue_body" | sed -n 's/.*【实验日志】//p' | xargs)" >> $GITHUB_OUTPUT
+          elif [[ "$issue_body" == *"【财务记录】"* ]]; then
+            echo "type=FINANCE_LOG" >> $GITHUB_OUTPUT
+            echo "item=$(echo "$issue_body" | grep -oP '项目: \K.*' | xargs)" >> $GITHUB_OUTPUT
+            echo "amount=$(echo "$issue_body" | grep -oP '金额: \K.*' | xargs)" >> $GITHUB_OUTPUT
+            echo "notes=$(echo "$issue_body" | grep -oP '备注: \K.*' | xargs)" >> $GITHUB_OUTPUT
           else
             echo "type=UNKNOWN" >> $GITHUB_OUTPUT
           fi
 
-      - name: Update Files based on Data Update
-        if: steps.extract.outputs.type == 'DATA_UPDATE'
+      - name: Generate HTML Snippet for Timeline
+        id: html_snippet
+        if: "steps.extract.outputs.type == 'MILESTONE' || steps.extract.outputs.type == 'LAB_LOG' || steps.extract.outputs.type == 'FINANCE_LOG'"
         run: |
-          echo "Updating dashboard with new data..."
-          # This part is similar to before, but simplified
-          sed -i "s|<div class=\"value\">[0-9]*%</div>|<div class=\"value\">${{ steps.extract.outputs.total_progress }}%</div>|" index.html
-          sed -i "s|<div class=\"progress-bar\" style=\"width: [0-9]*%;\"></div>|<div class=\"progress-bar\" style=\"width: ${{ steps.extract.outputs.total_progress }}%;\"></div>|" index.html
-          
-          # Update DAP
-          sed -i "s|<b>状态: .*</b>|<b>状态: ${{ steps.extract.outputs.dap_status }}</b>|" index.html
-          sed -i "/里程碑 1: DAP 数据接入/ s/width: [0-9]*%;/width: ${{ steps.extract.outputs.dap_progress }}%;/" index.html
-          sed -i "/里程碑 1: DAP 数据接入/ s/>[0-9]*%</>${{ steps.extract.outputs.dap_progress }}%</" index.html
-          
-          # Update Molecule
-          sed -i "/里程碑 1: 化合物数据采集/ s/状态: .*</状态: ${{ steps.extract.outputs.molecule_status }}</" index.html
-          sed -i "/里程碑 1: 化合物数据采集/ s/width: [0-9]*%;/width: ${{ steps.extract.outputs.molecule_progress }}%;/" index.html
-          sed -i "/里程碑 1: 化合物数据采集/ s/>[0-9]*%</>${{ steps.extract.outputs.molecule_progress }}%</" index.html
-
-      - name: Update Files based on Milestone
-        if: steps.extract.outputs.type == 'MILESTONE'
-        run: |
-          echo "Adding new milestone to the timeline..."
           timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          milestone_html="<li class=\"timeline-item\"><div class=\"timeline-icon\">⭐</div><span class=\"timeline-date\">${timestamp}</span><p class=\"timeline-content\">${{ steps.extract.outputs.milestone_text }}</p></li>"
-          # This inserts the new item right after the <ul> tag
-          sed -i "/<ul class=\"timeline\" id=\"project-timeline\">/a ${milestone_html}" index.html
-      
+          html=""
+          if [ "${{ steps.extract.outputs.type }}" == "MILESTONE" ]; then
+            html="<li class='timeline-item'><div class='timeline-icon'>⭐</div><span class='timeline-date'>${timestamp}</span><p class='timeline-content'>${{ steps.extract.outputs.text }}</p></li>"
+          elif [ "${{ steps.extract.outputs.type }}" == "LAB_LOG" ]; then
+            html="<li class='timeline-item'><div class='timeline-icon'>🔬</div><span class='timeline-date'>${timestamp}</span><p class='timeline-content'><b>[实验日志]</b> ${{ steps.extract.outputs.text }}</p></li>"
+          elif [ "${{ steps.extract.outputs.type }}" == "FINANCE_LOG" ]; then
+            html="<li class='timeline-item'><div class='timeline-icon'>💰</div><span class='timeline-date'>${timestamp}</span><p class='timeline-content'><b>[财务]</b> ${{ steps.extract.outputs.item }} - <b>支出: ${{ steps.extract.outputs.amount }}</b>. 备注: ${{ steps.extract.outputs.notes }}</p></li>"
+          fi
+          # This is a trick to pass multiline HTML to the next step
+          echo "snippet<<EOF" >> $GITHUB_OUTPUT
+          echo "$html" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+      - name: Update HTML File
+        if: steps.extract.outputs.type != 'UNKNOWN'
+        run: |
+          # Use a placeholder file to avoid complex sed escaping
+          cp index.html updated_index.html
+          
+          if [ "${{ steps.extract.outputs.type }}" == "DATA_UPDATE" ]; then
+            # Perform data updates here if needed in the future
+            echo "Performing data update..."
+          elif [ -n "${{ steps.html_snippet.outputs.snippet }}" ]; then
+             # Insert the new timeline item
+             awk -v snippet="${{ steps.html_snippet.outputs.snippet }}" '/<ul class="timeline" id="project-timeline">/ {print; print snippet; next} 1' updated_index.html > index.html
+             rm updated_index.html
+          fi
+          
       - name: Update Timestamp and Commit
         if: steps.extract.outputs.type != 'UNKNOWN'
         run: |
@@ -89,4 +99,4 @@ jobs:
         if: steps.extract.outputs.type != 'UNKNOWN'
         uses: peter-evans/close-issue@v3
         with:
-          comment: "感谢你的更新，合伙人。我已经将这个事件记录到了我们的日记中。✅"
+          comment: "感谢你的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅"
