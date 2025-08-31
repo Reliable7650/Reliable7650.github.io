@@ -1,0 +1,85 @@
+# Lazarus Project Dashboard Updater
+# This workflow is triggered when a new issue is created.
+# It parses the issue body, updates the index.html file, and commits the changes.
+
+name: Update Dashboard via Issue
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Extract data from issue
+        id: extract_data
+        run: |
+          issue_body="${{ github.event.issue.body }}"
+          echo "Parsing issue body..."
+          
+          # Extract data using grep and awk - very robust
+          total_progress=$(echo "$issue_body" | grep -oP '项目总进度: \K[0-9]+%' | tr -d '%')
+          dap_status=$(echo "$issue_body" | grep -oP 'DAP数据接入状态: \K.*')
+          dap_progress=$(echo "$issue_body" | grep -oP 'DAP数据接入进度: \K[0-9]+%' | tr -d '%')
+          molecule_status=$(echo "$issue_body" | grep -oP '分子库采集状态: \K.*')
+          molecule_progress=$(echo "$issue_body" | grep -oP '分子库采集进度: \K[0-9]+%' | tr -d '%')
+          log_entry=$(echo "$issue_body" | grep -oP '最新日志: \K.*')
+
+          # Set outputs for next steps
+          echo "total_progress=$total_progress" >> $GITHUB_OUTPUT
+          echo "dap_status=$dap_status" >> $GITHUB_OUTPUT
+          echo "dap_progress=$dap_progress" >> $GITHUB_OUTPUT
+          echo "molecule_status=$molecule_status" >> $GITHUB_OUTPUT
+          echo "molecule_progress=$molecule_progress" >> $GITHUB_OUTPUT
+          echo "log_entry=$log_entry" >> $GITHUB_OUTPUT
+          
+          echo "Data extracted successfully."
+
+      - name: Update index.html
+        run: |
+          echo "Updating index.html..."
+          
+          # Use sed to replace values in index.html. The -i flag edits the file in place.
+          # Note: We use different delimiters for sed (#) to avoid conflict with slashes in URLs or text.
+          sed -i "s#<div class=\"value\">[0-9]*%</div>#<div class=\"value\">${{ steps.extract_data.outputs.total_progress }}%</div>#" index.html
+          sed -i "s#<div class=\"progress-bar\" style=\"width: [0-9]*%;\"></div>#<div class=\"progress-bar\" style=\"width: ${{ steps.extract_data.outputs.total_progress }}%;\"></div>#" index.html
+          
+          # Update DAP Status text
+          sed -i "s#<b>状态: .*</b>#<b>状态: ${{ steps.extract_data.outputs.dap_status }}</b>#" index.html
+          
+          # Update DAP Progress Bar
+          sed -i "/里程碑 1: DAP 数据接入/,/progress-bar-container/ s/width: [0-9]*%;/width: ${{ steps.extract_data.outputs.dap_progress }}%;/" index.html
+          sed -i "/里程碑 1: DAP 数据接入/,/progress-bar-container/ s/>[0-9]*%</>${{ steps.extract_data.outputs.dap_progress }}%</" index.html
+          
+          # Update Molecule Status text
+          sed -i "/里程碑 1: 化合物数据采集/,/状态:/ s/状态: .*</状态: ${{ steps.extract_data.outputs.molecule_status }}</" index.html
+          
+          # Update Molecule Progress Bar
+          sed -i "/里程碑 1: 化合物数据采集/,/progress-bar-container/ s/width: [0-9]*%;/width: ${{ steps.extract_data.outputs.molecule_progress }}%;/" index.html
+          sed -i "/里程碑 1: 化合物数据采集/,/progress-bar-container/ s/>[0-9]*%</>${{ steps.extract_data.outputs.molecule_progress }}%</" index.html
+          
+          # Add new log entry to the top of the log box
+          timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          new_log_entry="<div class=\"log-entry\"><span class=\"log-timestamp\">[${timestamp}]</span> <span class=\"log-process\">[AUTO_UPDATE]</span> <span class=\"log-info status-submitted\">${{ steps.extract_data.outputs.log_entry }}</span></div>"
+          sed -i "/<div class=\"log-box\">/a ${new_log_entry}" index.html
+          
+          echo "index.html updated successfully."
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'Lazarus Automation Bot'
+          git config --global user.email 'bot@lazarus.project'
+          git add index.html
+          # Only commit if there are changes
+          if ! git diff --staged --quiet; then
+            git commit -m "Automated dashboard update via issue #${{ github.event.issue.number }}"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.LAZARUS_TOKEN }}
