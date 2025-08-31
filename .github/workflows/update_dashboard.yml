@@ -1,102 +1,271 @@
-# Lazarus Project Dashboard Updater v3.2 (Final Version with ASCII Fix)
-# Handles both narrative milestones and detailed, multi-metric data updates for ALL milestones.
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Lazarus - Command Center</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg-color: #2c2c2c;
+            --text-color: #e0e0e0;
+            --header-color: #ffffff;
+            --accent-color: #00aaff;
+            --success-color: #00cc66;
+            --warning-color: #ffaa00;
+            --progress-bar-bg: #444444;
+            --border-color: #555555;
+            --timeline-color: #777;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: var(--header-color);
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .header p {
+            color: var(--text-color);
+            margin: 5px 0 0;
+        }
+        .last-updated {
+            font-size: 0.9em;
+            color: var(--warning-color);
+        }
+        .key-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background-color: var(--card-bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--accent-color);
+        }
+        .metric-card h3 {
+            margin: 0 0 10px;
+            color: var(--header-color);
+            font-size: 1.1em;
+        }
+        .metric-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+        .metric-card .value .operational {
+            color: var(--success-color);
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--progress-bar-bg);
+            border-radius: 5px;
+            overflow: hidden;
+            height: 20px;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .task-grid, .timeline-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .task-card, .timeline-card, .log-container {
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            padding: 25px;
+        }
+        .task-card h2, .timeline-card h2, .log-container h2 {
+            margin: 0 0 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            color: var(--header-color);
+        }
+        .milestone {
+            margin-bottom: 20px;
+        }
+        .timeline {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            padding-bottom: 20px;
+            border-left: 2px solid var(--timeline-color);
+        }
+        .timeline-item:last-child {
+            padding-bottom: 0;
+            border-left: 2px solid transparent;
+        }
+        .timeline-icon {
+            position: absolute;
+            left: -11px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            color: white;
+        }
+        .timeline-date {
+            font-size: 0.8em;
+            color: var(--warning-color);
+            margin-bottom: 5px;
+            display: block;
+        }
+        .timeline-content {
+            font-size: 0.95em;
+        }
+        .log-box {
+            background-color: #111;
+            border: 1px solid var(--border-color);
+            height: 200px;
+            overflow-y: scroll;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.9em;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .log-timestamp {
+            color: var(--warning-color);
+        }
+        .log-process {
+            color: var(--accent-color);
+        }
+        .log-info {
+            color: var(--text-color);
+        }
 
-name: Update Dashboard via Issue
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Project Lazarus - Command Center</h1>
+            <p>我们的日记本：记录延长犬类寿命革命的每一步</p>
+            <p class="last-updated">最后更新时间: <span id="update-time">2025-08-31 12:00:00 UTC</span></p>
+        </header>
 
-on:
-  issues:
-    types: [opened]
+        <section class="key-metrics">
+            <div class="metric-card">
+                <h3>项目总进度</h3>
+                <div class="value" id="total_progress_val">0%</div>
+                <div class="progress-bar-container" style="margin-top: 10px;">
+                    <div class="progress-bar" id="total_progress_bar" style="width: 0%;"></div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h3>核心系统心跳</h3>
+                <div class="value operational">OPERATIONAL ✅</div>
+            </div>
+             <div class="metric-card">
+                <h3>当前状态</h3>
+                <div class="value" style="font-size: 1.5em;" id="current_status">准备就绪</div>
+            </div>
+        </section>
 
-permissions:
-  contents: write
-  issues: write
+        <main class="main-content">
+            <div class="task-grid">
+                <div class="task-card">
+                    <h2>任务一: 犬类衰老数字地图</h2>
+                    <div class="milestone" id="dap1">
+                        <h3>里程碑 1: DAP 数据接入</h3>
+                        <p><b>状态:</b> <span class="status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;">0%</div></div>
+                    </div>
+                    <div class="milestone" id="dap2">
+                        <h3>里程碑 2: 多源数据整合</h3>
+                        <p>状态: <span class="status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;">0%</div></div>
+                    </div>
+                    <div class="milestone" id="dap3">
+                        <h3>里程碑 3: 知识图谱构建</h3>
+                        <p>状态: <span class="status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;">0%</div></div>
+                    </div>
+                </div>
 
-jobs:
-  update:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Parse Issue Body
-        id: extract
-        run: |
-          issue_body="${{ github.event.issue.body }}"
-          if [[ "$issue_body" == *"【数据更新】"* ]]; then
-            echo "type=DATA_UPDATE" >> $GITHUB_OUTPUT
-            # Use a more robust way to capture all key-value pairs
-            # This logic now creates pure ASCII variable names
-            echo "$issue_body" | grep ":" | while IFS=: read -r key value; do
-              var_name=$(echo "$key" | tr -d '[:space:]' | sed 's/项目总进度/total_progress/' | sed 's/状态/_status/' | sed 's/进度/_progress/')
-              var_value=$(echo "$value" | xargs)
-              echo "${var_name}=${var_value}" >> $GITHUB_OUTPUT
-            done
-          elif [[ "$issue_body" == *"【里程碑】"* ]]; then
-            echo "type=MILESTONE" >> $GITHUB_OUTPUT
-            milestone_text=$(echo "$issue_body" | sed -n 's/.*【里程碑】//p' | xargs)
-            echo "milestone_text=$milestone_text" >> $GITHUB_OUTPUT
-          else
-            echo "type=UNKNOWN" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Update Files based on Data Update
-        if: steps.extract.outputs.type == 'DATA_UPDATE'
-        run: |
-          # A function for updating a milestone block to reduce repetition
-          update_milestone() {
-            local id=$1
-            local status=$2
-            local progress=$3
+                <div class="task-card">
+                    <h2>任务二: 抗衰老候选分子库</h2>
+                     <div class="milestone" id="mol1">
+                        <h3>里程碑 1: 化合物数据采集</h3>
+                        <p>状态: <span class="status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;">0%</div></div>
+                    </div>
+                     <div class="milestone" id="mol2">
+                        <h3>里程碑 2: 分子“画像”与筛选</h3>
+                        <p>状态: <span class="status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;">0%</div></div>
+                    </div>
+                     <div class="milestone" id="mol3">
+                        <h3>里程碑 3: 精选分子库生成</h3>
+                        <p>状态: <span class="status">尚未开始</span></p>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;">0%</div></div>
+                    </div>
+                </div>
+            </div>
             
-            # Update Status Text (different logic for the first one)
-            if [ "$id" == "dap-1" ]; then
-              sed -i "/id=\"dap-1\"/!b;n;n; s|<b>.*</b>|<b>状态: $status</b>|" index.html
-            else
-              sed -i "/id=\"$id\"/!b;n;n; s|状态: .*</p>|状态: $status</p>|" index.html
-            fi
-            
-            # Update Progress Bar
-            sed -i "/id=\"$id\"/!b;n;n;n;n; s/width: [0-9.]*%;/width: $progress%;/" index.html
-            sed -i "/id=\"$id\"/!b;n;n;n;n; s/>[0-9.]*%</>$progress%</" index.html
-          }
+            <div class="timeline-container">
+                <div class="timeline-card">
+                    <h2>项目大事记</h2>
+                    <ul class="timeline" id="project-timeline">
+                        <!-- MILESTONES WILL BE AUTO-INSERTED HERE -->
+                    </ul>
+                </div>
+            </div>
+        </main>
 
-          update_milestone "dap-1" "${{ steps.extract.outputs.dap1_status }}" "${{ steps.extract.outputs.dap1_progress }}"
-          update_milestone "dap-2" "${{ steps.extract.outputs.dap2_status }}" "${{ steps.extract.outputs.dap2_progress }}"
-          update_milestone "dap-3" "${{ steps.extract.outputs.dap3_status }}" "${{ steps.extract.outputs.dap3_progress }}"
-          update_milestone "mol-1" "${{ steps.extract.outputs.mol1_status }}" "${{ steps.extract.outputs.mol1_progress }}"
-          update_milestone "mol-2" "${{ steps.extract.outputs.mol2_status }}" "${{ steps.extract.outputs.mol2_progress }}"
+        <section class="log-container">
+            <h2>实时活动日志</h2>
+            <div class="log-box" id="log-box">
+                <!-- LOG ENTRIES WILL BE AUTO-INSERTED HERE -->
+            </div>
+        </section>
 
-          # Update overall progress
-          sed -i "s|<div class=\"value\">[0-9.]*%</div>|<div class=\"value\">${{ steps.extract.outputs.total_progress }}%</div>|" index.html
-          sed -i "s|<div class=\"progress-bar\" style=\"width: [0-9.]*%;\"></div>|<div class=\"progress-bar\" style=\"width: ${{ steps.extract.outputs.total_progress }}%;\"></div>|" index.html
-
-      - name: Update Files based on Milestone
-        if: steps.extract.outputs.type == 'MILESTONE'
-        run: |
-          timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          milestone_html="<li class=\"timeline-item\"><div class=\"timeline-icon\">⭐</div><span class=\"timeline-date\">${timestamp}</span><p class=\"timeline-content\">${{ steps.extract.outputs.milestone_text }}</p></li>"
-          sed -i "/<ul class=\"timeline\" id=\"project-timeline\">/a ${milestone_html}" index.html
-      
-      - name: Update Timestamp and Commit
-        if: steps.extract.outputs.type != 'UNKNOWN'
-        run: |
-          timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          sed -i "s|<span id=\"update-time\">.*</span>|<span id=\"update-time\">${timestamp}</span>|" index.html
-          
-          git config --global user.name 'Lazarus Diary Bot'
-          git config --global user.email 'bot@lazarus.project'
-          git add index.html
-          if ! git diff --staged --quiet; then
-            git commit -m "Automated Diary Update: ${{ steps.extract.outputs.type }} via issue #${{ github.event.issue.number }}"
-            git push
-          else
-            echo "No changes to commit."
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.LAZARUS_TOKEN }}
-          
-      - name: Close the Issue
-        if: steps.extract.outputs.type != 'UNKNOWN'
-        uses: peter-evans/close-issue@v3
-        with:
-          comment: "感谢你的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅"
+    </div>
+</body>
+</html>
