@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Lazarus - Command Center</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --card-bg-color: #2c2c2c;
+            --text-color: #e0e0e0;
+            --header-color: #ffffff;
+            --accent-color: #00aaff;
+            --success-color: #00cc66;
+            --warning-color: #ffaa00;
+            --progress-bar-bg: #444444;
+            --border-color: #555555;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            color: var(--header-color);
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .header p {
+            color: var(--text-color);
+            margin: 5px 0 0;
+        }
+        .last-updated {
+            font-size: 0.9em;
+            color: var(--warning-color);
+        }
+        .key-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background-color: var(--card-bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--accent-color);
+        }
+        .metric-card h3 {
+            margin: 0 0 10px;
+            color: var(--header-color);
+            font-size: 1.1em;
+        }
+        .metric-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+        .metric-card .value .operational {
+            color: var(--success-color);
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: var(--progress-bar-bg);
+            border-radius: 5px;
+            overflow: hidden;
+            height: 20px;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--accent-color);
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        .task-card {
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            padding: 25px;
+        }
+        .task-card h2 {
+            margin: 0 0 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            color: var(--header-color);
+        }
+        .milestone {
+            margin-bottom: 15px;
+        }
+        .milestone-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .milestone-header span {
+            font-weight: bold;
+        }
+        .milestone-status {
+            font-size: 1.2em;
+        }
+        .log-container {
+            margin-top: 30px;
+            background-color: var(--card-bg-color);
+            border-radius: 8px;
+            padding: 25px;
+        }
+        .log-container h2 {
+            margin: 0 0 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            color: var(--header-color);
+        }
+        .log-box {
+            background-color: #111;
+            border: 1px solid var(--border-color);
+            height: 200px;
+            overflow-y: scroll;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.9em;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .log-timestamp {
+            color: var(--warning-color);
+        }
+        .log-process {
+            color: var(--accent-color);
+        }
+        .log-info {
+            color: var(--text-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Project: Lazarus - Command Center</h1>
+            <p>延长犬类寿命革命性产品 - 虚拟研发指挥中心</p>
+            <p class="last-updated">最后更新时间: <span id="update-time"></span></p>
+        </header>
+
+        <section class="key-metrics">
+            <div class="metric-card">
+                <h3>项目总进度</h3>
+                <div class="value">15%</div>
+                <div class="progress-bar-container" style="margin-top: 10px;">
+                    <div class="progress-bar" style="width: 15%;"></div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h3>核心系统心跳</h3>
+                <div class="value operational">OPERATIONAL ✅</div>
+            </div>
+            <div class="metric-card">
+                <h3>当前计算资源负载</h3>
+                <div class="value">35.7%</div>
+            </div>
+        </section>
+
+        <main class="task-grid">
+            <div class="task-card">
+                <h2>任务一: 犬类衰老数字地图</h2>
+                <div class="milestone">
+                    <div class="milestone-header">
+                        <span>里程碑 1: DAP 数据接入</span>
+                        <span class="milestone-status">🔄</span>
+                    </div>
+                    <p style="font-size: 0.9em; color: #aaa;">状态: 数据访问申请已提交，等待审批</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 90%;">90%</div>
+                    </div>
+                </div>
+                <div class="milestone">
+                    <div class="milestone-header">
+                        <span>里程碑 2: 多源数据整合</span>
+                        <span class="milestone-status">🔄</span>
+                    </div>
+                    <p style="font-size: 0.9em; color: #aaa;">状态: 正在并行拉取并处理公共数据库数据</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 25%;">25%</div>
+                    </div>
+                </div>
+                <div class="milestone">
+                    <div class="milestone-header">
+                        <span>里程碑 3: 知识图谱构建</span>
+                        <span class="milestone-status">⏳</span>
+                    </div>
+                     <p style="font-size: 0.9em; color: #aaa;">状态: 核心实体与关系模式设计中</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 10%;">10%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-card">
+                <h2>任务二: 抗衰老候选分子库</h2>
+                <div class="milestone">
+                    <div class="milestone-header">
+                        <span>里程碑 1: 化合物数据采集</span>
+                        <span class="milestone-status">🔄</span>
+                    </div>
+                    <p style="font-size: 0.9em; color: #aaa;">状态: 已采集 2,154,831 种化合物数据</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 40%;">40%</div>
+                    </div>
+                </div>
+                <div class="milestone">
+                    <div class="milestone-header">
+                        <span>里程碑 2: 分子“画像”与筛选</span>
+                        <span class="milestone-status">🔄</span>
+                    </div>
+                    <p style="font-size: 0.9em; color: #aaa;">状态: 计算化学评估流水线运行中</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 18%;">18%</div>
+                    </div>
+                </div>
+                <div class="milestone">
+                    <div class="milestone-header">
+                        <span>里程碑 3: 精选分子库生成</span>
+                        <span class="milestone-status">⏳</span>
+                    </div>
+                     <p style="font-size: 0.9em; color: #aaa;">状态: 当前入库高潜力分子数: 1,289</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 5%;">5%</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <section class="log-container">
+            <h2>实时活动日志</h2>
+            <div class="log-box">
+                <div class="log-entry">
+                    <span class="log-timestamp">[2025-08-31 08:35:12 UTC]</span>
+                    <span class="log-process">[PROCESS_ID: 9112]</span>
+                    <span class="log-info">Successfully parsed and stored ChEMBL compound CHEMBL1201377 (Rapamycin) bioactivity data.</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">[2025-08-31 08:35:10 UTC]</span>
+                    <span class="log-process">[PROCESS_ID: 8840]</span>
+                    <span class="log-info">Mapping DAP phenotype code 'dap_hles_kidney_v1' to 'Disease:Kidney_Disease' node in knowledge graph schema.</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">[2025-08-31 08:35:08 UTC]</span>
+                    <span class="log-process">[PROCESS_ID: 9111]</span>
+                    <span class="log-info">Calculating ADMET properties for molecule batch #1453 (compounds 1,453,001 to 1,454,000).</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">[2025-08-31 08:35:05 UTC]</span>
+                    <span class="log-process">[PROCESS_ID: 8839]</span>
+                    <span class="log-info">Running NLP entity extraction model on PubMed abstract PMID:312XXXXX. Identified 'Canine' and 'mTOR'.</span>
+                </div>
+                 <div class="log-entry">
+                    <span class="log-timestamp">[2025-08-31 08:35:02 UTC]</span>
+                    <span class="log-process">[PROCESS_ID: 9111]</span>
+                    <span class="log-info">API call to PubChem for compounds related to 'Senolytic'. Request sent. 1.2M results pending download.</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Set the update time dynamically
+        document.getElementById('update-time').textContent = new Date().toISOString();
+    </script>
+</body>
+</html>
