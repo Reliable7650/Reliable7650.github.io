@@ -1,4 +1,4 @@
-# Lazarus Project Dashboard Updater v3.1 (Full Version with Fixes)
+# Lazarus Project Dashboard Updater v3.2 (Final Version with ASCII Fix)
 # Handles both narrative milestones and detailed, multi-metric data updates for ALL milestones.
 
 name: Update Dashboard via Issue
@@ -24,8 +24,10 @@ jobs:
           issue_body="${{ github.event.issue.body }}"
           if [[ "$issue_body" == *"【数据更新】"* ]]; then
             echo "type=DATA_UPDATE" >> $GITHUB_OUTPUT
+            # Use a more robust way to capture all key-value pairs
+            # This logic now creates pure ASCII variable names
             echo "$issue_body" | grep ":" | while IFS=: read -r key value; do
-              var_name=$(echo "$key" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+              var_name=$(echo "$key" | tr -d '[:space:]' | sed 's/项目总进度/total_progress/' | sed 's/状态/_status/' | sed 's/进度/_progress/')
               var_value=$(echo "$value" | xargs)
               echo "${var_name}=${var_value}" >> $GITHUB_OUTPUT
             done
@@ -58,15 +60,15 @@ jobs:
             sed -i "/id=\"$id\"/!b;n;n;n;n; s/>[0-9.]*%</>$progress%</" index.html
           }
 
-          update_milestone "dap-1" "${{ steps.extract.outputs.dap1_状态 }}" "${{ steps.extract.outputs.dap1_进度 }}"
-          update_milestone "dap-2" "${{ steps.extract.outputs.dap2_状态 }}" "${{ steps.extract.outputs.dap2_进度 }}"
-          update_milestone "dap-3" "${{ steps.extract.outputs.dap3_状态 }}" "${{ steps.extract.outputs.dap3_进度 }}"
-          update_milestone "mol-1" "${{ steps.extract.outputs.mol1_状态 }}" "${{ steps.extract.outputs.mol1_进度 }}"
-          update_milestone "mol-2" "${{ steps.extract.outputs.mol2_状态 }}" "${{ steps.extract.outputs.mol2_进度 }}"
+          update_milestone "dap-1" "${{ steps.extract.outputs.dap1_status }}" "${{ steps.extract.outputs.dap1_progress }}"
+          update_milestone "dap-2" "${{ steps.extract.outputs.dap2_status }}" "${{ steps.extract.outputs.dap2_progress }}"
+          update_milestone "dap-3" "${{ steps.extract.outputs.dap3_status }}" "${{ steps.extract.outputs.dap3_progress }}"
+          update_milestone "mol-1" "${{ steps.extract.outputs.mol1_status }}" "${{ steps.extract.outputs.mol1_progress }}"
+          update_milestone "mol-2" "${{ steps.extract.outputs.mol2_status }}" "${{ steps.extract.outputs.mol2_progress }}"
 
           # Update overall progress
-          sed -i "s|<div class=\"value\">[0-9.]*%</div>|<div class=\"value\">${{ steps.extract.outputs.项目总进度 }}%</div>|" index.html
-          sed -i "s|<div class=\"progress-bar\" style=\"width: [0-9.]*%;\"></div>|<div class=\"progress-bar\" style=\"width: ${{ steps.extract.outputs.项目总进度 }}%;\"></div>|" index.html
+          sed -i "s|<div class=\"value\">[0-9.]*%</div>|<div class=\"value\">${{ steps.extract.outputs.total_progress }}%</div>|" index.html
+          sed -i "s|<div class=\"progress-bar\" style=\"width: [0-9.]*%;\"></div>|<div class=\"progress-bar\" style=\"width: ${{ steps.extract.outputs.total_progress }}%;\"></div>|" index.html
 
       - name: Update Files based on Milestone
         if: steps.extract.outputs.type == 'MILESTONE'
