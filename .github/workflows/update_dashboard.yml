@@ -1,4 +1,4 @@
-# Lazarus Project Dashboard Updater - Genesis II Version v7.2
+# Lazarus Project Dashboard Updater - Final Version v8.0
 
 name: Update Dashboard via Issue
 
@@ -16,12 +16,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          # Use the built-in GITHUB_TOKEN for this step
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update Dashboard with Python Script
+        id: update_script
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
           pip install beautifulsoup4
+          # The Python script remains the same as it was robust.
           python - <<'END_PYTHON'
           import os
           import re
@@ -143,8 +148,3 @@ jobs:
           else
             echo "No changes to commit."
           fi
-      
-      - name: Close the Issue
-        uses: peter-evans/close-issue@v3
-        with:
-          comment: "感谢您的更新，合伙人。我已经将这个事件/数据记录到了我们的日记中。✅ (Genesis II v7.2)"
